@@ -18,7 +18,26 @@ The `pages` workflow deploys it to GitHub Pages on every push to `main`. Enable 
 
 ## Install
 
-**As a dev extension (now):**
+**One command, kept up to date (macOS and Linux):**
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/chrisnicholson30/turbine-theme/main/install.sh | bash
+```
+
+`install.sh` downloads `themes/turbine.json` into `~/.config/zed/themes/`, which Zed watches, so the theme appears in `theme selector` without a restart. It then keeps a local copy of itself in `~/.local/share/turbine-theme/` and registers a daily `update` with launchd on macOS, a systemd user timer on Linux, or cron as a fallback. The updater downloads only the theme file, validates it, and replaces the installed copy only when it changed.
+
+| Command | Does |
+|---|---|
+| `turbine.sh update` | Fetch the latest theme now |
+| `turbine.sh status` | Show what is installed, the schedule, and the last log lines |
+| `turbine.sh uninstall` | Remove the theme, the updater and its schedule |
+| `install.sh --no-auto` | Install without the daily updater |
+| `install.sh --ref <branch or tag>` | Track something other than `main` (also `TURBINE_REF=…`) |
+| `install.sh --variant hypersonic` | Print the `settings.json` snippet for that dark variant |
+
+The script never edits `settings.json`, because Zed's settings allow comments and a blind rewrite could damage them. It prints the snippet to paste instead.
+
+**As a dev extension (for working on the theme):**
 
 1. Clone this repository.
 2. In Zed run `zed: install dev extension` and pick the cloned folder.
@@ -109,6 +128,7 @@ Note that running the validator on the shipped file with the v0.2.0 list will li
 ```
 turbine-theme/
   extension.toml                Zed extension manifest
+  install.sh                    installer and daily updater for Zed's user themes folder
   themes/turbine.json           the theme family (generated, committed)
   build/build_theme.py          token model, key map, generator, contrast report
   build/validate_turbine.py     schema + WCAG validator from the brief
