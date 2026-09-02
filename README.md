@@ -10,9 +10,34 @@ A community-led theme family for [Zed](https://zed.dev). Three variants, one tok
 
 Every text-bearing pair in every variant clears WCAG AA (4.5:1), including text on selections, diff rows, diagnostic tints and vim mode pills. Most dark-variant pairs clear AAA. The computed table is in [`docs/contrast.md`](docs/contrast.md).
 
+## Showcase site
+
+`site/index.html` is a single-page showcase that re-themes itself live from the theme file: an engine-mode selector for the three regimes, a Zed window mockup painted from `turbine.json`, token gauges with live contrast ratios, the install steps, and a battery-aware nudge toward Hypersonic. It follows the OS colour scheme by default, remembers your choice, and answers to the keys 1, 2 and 3. Christopher's turbine emblem is the site logo and favicon (`site/assets/`).
+
+The `pages` workflow deploys it to GitHub Pages on every push to `main`. Enable Pages once in the repository settings, with source set to GitHub Actions. To preview locally, open `site/index.html` in a browser; no build step is needed. When the theme changes, `python3 build/build_theme.py --site` re-injects the JSON, and `--check` fails if the site is stale.
+
 ## Install
 
-**As a dev extension (now):**
+**One command, kept up to date (macOS and Linux):**
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/chrisnicholson30/turbine-theme/main/install.sh | bash
+```
+
+`install.sh` downloads `themes/turbine.json` into `~/.config/zed/themes/`, which Zed watches, so the theme appears in `theme selector` without a restart. It then keeps a local copy of itself in `~/.local/share/turbine-theme/` and registers a daily `update` with launchd on macOS, a systemd user timer on Linux, or cron as a fallback. The updater downloads only the theme file, validates it, and replaces the installed copy only when it changed.
+
+| Command | Does |
+|---|---|
+| `turbine.sh update` | Fetch the latest theme now |
+| `turbine.sh status` | Show what is installed, the schedule, and the last log lines |
+| `turbine.sh uninstall` | Remove the theme, the updater and its schedule |
+| `install.sh --no-auto` | Install without the daily updater |
+| `install.sh --ref <branch or tag>` | Track something other than `main` (also `TURBINE_REF=…`) |
+| `install.sh --variant hypersonic` | Print the `settings.json` snippet for that dark variant |
+
+The script never edits `settings.json`, because Zed's settings allow comments and a blind rewrite could damage them. It prints the snippet to paste instead.
+
+**As a dev extension (for working on the theme):**
 
 1. Clone this repository.
 2. In Zed run `zed: install dev extension` and pick the cloned folder.
@@ -72,7 +97,8 @@ No dependencies beyond Python 3.10+.
 
 ```sh
 python3 build/build_theme.py            # regenerate themes/turbine.json (current schema, 189 keys)
-python3 build/build_theme.py --check    # confirm the committed JSON matches the token source
+python3 build/build_theme.py --site     # inject the theme JSON into the showcase site
+python3 build/build_theme.py --check    # confirm the committed JSON and site match the token source
 python3 build/build_theme.py --report   # write docs/contrast.md, fail on any AA miss
 python3 build/validate_turbine.py themes/turbine.json build/schema_keys.txt
 ```
@@ -102,11 +128,14 @@ Note that running the validator on the shipped file with the v0.2.0 list will li
 ```
 turbine-theme/
   extension.toml                Zed extension manifest
+  install.sh                    installer and daily updater for Zed's user themes folder
   themes/turbine.json           the theme family (generated, committed)
   build/build_theme.py          token model, key map, generator, contrast report
   build/validate_turbine.py     schema + WCAG validator from the brief
   build/schema_keys.txt         current Zed schema key list
   build/schema_keys_v0.2.0.txt  pinned v0.2.0 key list
+  site/index.html               showcase site (GitHub Pages), themed live from the JSON
+  site/assets/                  logo and favicons
   docs/design-brief-v2.md       the build-ready design brief
   docs/decisions.md             where the build departs from the brief, and why
   docs/contrast.md              generated contrast report

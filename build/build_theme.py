@@ -9,7 +9,8 @@ Usage:
     python3 build/build_theme.py             # write themes/turbine.json (full current key set)
     python3 build/build_theme.py --strict    # emit only the pinned v0.2.0 keys
     python3 build/build_theme.py --report    # write docs/contrast.md and gate on WCAG AA
-    python3 build/build_theme.py --check     # build to memory, diff against themes/turbine.json
+    python3 build/build_theme.py --check     # build to memory, diff against themes/turbine.json and the site
+    python3 build/build_theme.py --site      # inject the theme JSON into site/index.html
 
 Key lists:
     build/schema_keys.txt         every key in Zed's current ThemeStyleContent,
@@ -28,6 +29,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 THEME_PATH = ROOT / "themes" / "turbine.json"
 REPORT_PATH = ROOT / "docs" / "contrast.md"
+SITE_PATH = ROOT / "site" / "index.html"
+SITE_OPEN = '<script id="turbine-theme" type="application/json">'
+SITE_CLOSE = "</script>"
 KEYS_CURRENT = ROOT / "build" / "schema_keys.txt"
 KEYS_V020 = ROOT / "build" / "schema_keys_v0.2.0.txt"
 
@@ -479,6 +483,15 @@ def dumps(family: dict) -> str:
     return json.dumps(family, indent=2, ensure_ascii=False) + "\n"
 
 
+def site_with_theme(family: dict) -> str:
+    """Return site/index.html with the theme JSON injected into its data block."""
+    html = SITE_PATH.read_text(encoding="utf-8")
+    start = html.index(SITE_OPEN) + len(SITE_OPEN)
+    end = html.index(SITE_CLOSE, start)
+    blob = json.dumps(family, separators=(",", ":"), ensure_ascii=False).replace("</", "<\\/")
+    return html[:start] + blob + html[end:]
+
+
 # ---------------------------------------------------------------------------
 # Contrast report (WCAG 2.1 relative luminance, same maths as the validator)
 # ---------------------------------------------------------------------------
@@ -658,7 +671,8 @@ def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--strict", action="store_true", help="emit only the pinned v0.2.0 keys")
     ap.add_argument("--report", action="store_true", help="write docs/contrast.md and fail on any required pair below floor")
-    ap.add_argument("--check", action="store_true", help="verify themes/turbine.json matches the generator output")
+    ap.add_argument("--check", action="store_true", help="verify themes/turbine.json and site/index.html match the generator output")
+    ap.add_argument("--site", action="store_true", help="inject the theme JSON into site/index.html")
     ap.add_argument("--out", type=Path, default=THEME_PATH, help="output path (default themes/turbine.json)")
     args = ap.parse_args(argv)
 
@@ -674,6 +688,11 @@ def main(argv: list[str]) -> int:
     family = build_family(args.strict)
     text = dumps(family)
 
+    if args.site:
+        SITE_PATH.write_text(site_with_theme(family), encoding="utf-8")
+        print(f"wrote theme data into {rel(SITE_PATH)}")
+        return 0
+
     if args.check:
         current = args.out.read_text(encoding="utf-8") if args.out.exists() else ""
         if current != text:
@@ -681,6 +700,11 @@ def main(argv: list[str]) -> int:
                   + (" --strict" if args.strict else ""))
             return 1
         print(f"{rel(args.out)} is up to date")
+        if not args.strict and SITE_PATH.exists():
+            if SITE_PATH.read_text(encoding="utf-8") != site_with_theme(family):
+                print(f"{rel(SITE_PATH)} carries stale theme data — run: python3 build/build_theme.py --site")
+                return 1
+            print(f"{rel(SITE_PATH)} theme data is up to date")
         return 0
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
