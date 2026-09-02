@@ -3,18 +3,21 @@ name: pages
 on:
   push:
     branches: [main]
-    paths: ["site/**", "themes/**", "build/**", ".github/workflows/pages.yml"]
+    paths: ["site/**", "themes/**", "build/**", "index.html", ".github/workflows/pages.yml"]
   workflow_dispatch:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 concurrency:
   group: pages
   cancel-in-progress: true
 
 jobs:
-  publish:
+  # Source "Deploy from a branch" → gh-pages. Always succeeds.
+  branch:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,3 +34,19 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git subtree split --prefix site -b gh-pages-build
           git push --force origin gh-pages-build:gh-pages
+
+  # Source "GitHub Actions". Skipped gracefully when Pages uses a branch.
+  actions:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v4
