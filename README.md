@@ -10,6 +10,12 @@ A community-led theme family for [Zed](https://zed.dev). Three variants, one tok
 
 Every text-bearing pair in every variant clears WCAG AA (4.5:1), including text on selections, diff rows, diagnostic tints and vim mode pills. Most dark-variant pairs clear AAA. The computed table is in [`docs/contrast.md`](docs/contrast.md).
 
+## Showcase site
+
+`site/index.html` is a single-page showcase that re-themes itself live from the theme file: an engine-mode selector for the three regimes, a Zed window mockup painted from `turbine.json`, token gauges with live contrast ratios, the install steps, and a battery-aware nudge toward Hypersonic. It follows the OS colour scheme by default, remembers your choice, and answers to the keys 1, 2 and 3. Christopher's turbine emblem is the site logo and favicon (`site/assets/`).
+
+The `pages` workflow deploys it to GitHub Pages on every push to `main`. Enable Pages once in the repository settings, with source set to GitHub Actions. To preview locally, open `site/index.html` in a browser; no build step is needed. When the theme changes, `python3 build/build_theme.py --site` re-injects the JSON, and `--check` fails if the site is stale.
+
 ## Install
 
 **As a dev extension (now):**
@@ -72,7 +78,8 @@ No dependencies beyond Python 3.10+.
 
 ```sh
 python3 build/build_theme.py            # regenerate themes/turbine.json (current schema, 189 keys)
-python3 build/build_theme.py --check    # confirm the committed JSON matches the token source
+python3 build/build_theme.py --site     # inject the theme JSON into the showcase site
+python3 build/build_theme.py --check    # confirm the committed JSON and site match the token source
 python3 build/build_theme.py --report   # write docs/contrast.md, fail on any AA miss
 python3 build/validate_turbine.py themes/turbine.json build/schema_keys.txt
 ```
@@ -107,6 +114,8 @@ turbine-theme/
   build/validate_turbine.py     schema + WCAG validator from the brief
   build/schema_keys.txt         current Zed schema key list
   build/schema_keys_v0.2.0.txt  pinned v0.2.0 key list
+  site/index.html               showcase site (GitHub Pages), themed live from the JSON
+  site/assets/                  logo and favicons
   docs/design-brief-v2.md       the build-ready design brief
   docs/decisions.md             where the build departs from the brief, and why
   docs/contrast.md              generated contrast report
