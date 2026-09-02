@@ -14,8 +14,12 @@ jobs:
           python-version: "3.12"
       - name: Generated theme matches the token source
         run: python3 build/build_theme.py --check
-      - name: Schema keys and WCAG AA (validator)
+      - name: Current schema keys and WCAG AA (validator)
         run: python3 build/validate_turbine.py themes/turbine.json build/schema_keys.txt
+      - name: Pinned v0.2.0 build also validates
+        run: |
+          python3 build/build_theme.py --strict --out /tmp/turbine-v0.2.0.json
+          python3 build/validate_turbine.py /tmp/turbine-v0.2.0.json build/schema_keys_v0.2.0.txt
       - name: Full contrast report
         run: python3 build/build_theme.py --report
       - name: Theme JSON is well-formed

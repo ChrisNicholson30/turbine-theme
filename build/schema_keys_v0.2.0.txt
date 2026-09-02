@@ -27,7 +27,6 @@ editor.document_highlight.write_background
 editor.foreground
 editor.gutter.background
 editor.highlighted_line.background
-editor.hover_line_number
 editor.indent_guide
 editor.indent_guide_active
 editor.invisible
@@ -88,7 +87,6 @@ scrollbar.thumb.border
 scrollbar.thumb.hover_background
 scrollbar.track.background
 scrollbar.track.border
-search.active_match_background
 search.match_background
 status_bar.background
 success
@@ -139,13 +137,6 @@ toolbar.background
 unreachable
 unreachable.background
 unreachable.border
-version_control.added
-version_control.conflict_marker.ours
-version_control.conflict_marker.theirs
-version_control.deleted
-version_control.modified
-version_control.word_added
-version_control.word_deleted
 warning
 warning.background
 warning.border
