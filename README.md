@@ -2,6 +2,8 @@
 
 A community-led theme family for [Zed](https://zed.dev). Three variants, one token model, one JSON file.
 
+**Site:** https://chrisnicholson30.github.io/turbine-theme/
+
 | Variant | Appearance | Canvas | Use it for |
 |---|---|---|---|
 | **Turbine Hypersonic** | dark | `#000000` (OLED black) | Battery-critical work, OLED laptops, low light |
@@ -14,7 +16,7 @@ Every text-bearing pair in every variant clears WCAG AA (4.5:1), including text 
 
 `site/index.html` is a single-page showcase that re-themes itself live from the theme file: an engine-mode selector for the three regimes, a Zed window mockup painted from `turbine.json`, token gauges with live contrast ratios, the install steps, and a battery-aware nudge toward Hypersonic. It follows the OS colour scheme by default, remembers your choice, and answers to the keys 1, 2 and 3. Christopher's turbine emblem is the site logo and favicon (`site/assets/`).
 
-The `pages` workflow deploys it to GitHub Pages on every push to `main`. Enable Pages once in the repository settings, with source set to GitHub Actions. To preview locally, open `site/index.html` in a browser; no build step is needed. When the theme changes, `python3 build/build_theme.py --site` re-injects the JSON, and `--check` fails if the site is stale.
+The `pages` workflow deploys it to https://chrisnicholson30.github.io/turbine-theme/ on every push to `main` that touches the site or theme. It publishes both ways: an Actions deployment (the repository's Pages source) and a `gh-pages` branch, so either Pages setting serves it. To preview locally, open `site/index.html` in a browser; no build step is needed. When the theme changes, `python3 build/build_theme.py --site` re-injects the JSON, and `--check` fails if the site is stale.
 
 ## Install
 
