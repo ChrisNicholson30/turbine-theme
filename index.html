@@ -1,0 +1,888 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Turbine</title>
+<meta name="description" content="Turbine is a three-variant theme family for the Zed editor: Hypersonic for OLED, Supersonic for the desk, Subsonic for daylight.">
+<meta name="theme-color" content="#14171A">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/favicon-192.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira:wght@300;500;700;800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<script>
+/* Pick the variant before first paint: saved choice, else the host's theme stamp, else the OS. */
+(function () {
+  var v = null;
+  try { v = localStorage.getItem("turbine.variant"); } catch (e) {}
+  var root = document.documentElement;
+  if (!v) {
+    var stamp = root.getAttribute("data-theme");
+    var light = stamp ? stamp === "light" : (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches);
+    v = light ? "subsonic" : "supersonic";
+  }
+  root.setAttribute("data-variant", v);
+})();
+</script>
+<style>
+/* ------------------------------------------------------------------ tokens
+   Bare :root is Supersonic (the desk default). The other two variants
+   override the same tokens. JS repaints all of these from the theme JSON
+   so the page and the theme can never drift apart. */
+:root {
+  --bg: #14171A; --surface: #1B1F23; --elevated: #22272C;
+  --text: #E6E4E0; --muted: #9BA4AC; --ghost: #868F97; --disabled: #646C74;
+  --border: #2C3238; --border-hi: #414A52;
+  --accent: #3FD3B4; --blue: #6BA8F5; --green: #6FD47F; --yellow: #E6BA45;
+  --orange: #F0A05E; --red: #F2736B; --purple: #C79BF0;
+  --sel: #1D3B39; --active-ln: #1A1E22;
+  --glow: rgba(63, 211, 180, 0.18);
+  --bezel: #000000;
+  --font-display: "Saira", "Bahnschrift", "Arial Narrow", sans-serif;
+  --font-body: "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+  --rail: 15.5rem;
+  --spool: 0deg;
+  color-scheme: dark;
+}
+:root[data-variant="hypersonic"] {
+  --bg: #000000; --surface: #0E1113; --elevated: #16191C;
+  --text: #EDEBE6; --muted: #99A1A8; --ghost: #7B838A; --disabled: #5C646B;
+  --border: #23282D; --border-hi: #39424A;
+  --accent: #4FE3C1; --blue: #7FB4FF; --green: #7BE38B; --yellow: #F2C94C;
+  --orange: #FFB067; --red: #FF7B72; --purple: #D9A6FF;
+  --sel: #123A38; --active-ln: #0B0E10;
+  --glow: rgba(79, 227, 193, 0.2);
+  color-scheme: dark;
+}
+:root[data-variant="subsonic"],
+:root[data-theme="light"]:not([data-variant]) {
+  --bg: #F7F4EF; --surface: #EFEBE4; --elevated: #FFFFFF;
+  --text: #22262B; --muted: #5A6169; --ghost: #636A72; --disabled: #8B939B;
+  --border: #D9D3CA; --border-hi: #B9B1A6;
+  --accent: #0C7763; --blue: #1D5FCC; --green: #17714A; --yellow: #8A5A00;
+  --orange: #B4470F; --red: #C0342B; --purple: #7A3BB5;
+  --sel: #CFE8E1; --active-ln: #EFECE6;
+  --glow: rgba(12, 119, 99, 0.14);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-variant]):not([data-theme="dark"]) {
+    --bg: #F7F4EF; --surface: #EFEBE4; --elevated: #FFFFFF;
+    --text: #22262B; --muted: #5A6169; --ghost: #636A72; --disabled: #8B939B;
+    --border: #D9D3CA; --border-hi: #B9B1A6;
+    --accent: #0C7763; --blue: #1D5FCC; --green: #17714A; --yellow: #8A5A00;
+    --orange: #B4470F; --red: #C0342B; --purple: #7A3BB5;
+    --sel: #CFE8E1; --active-ln: #EFECE6;
+    --glow: rgba(12, 119, 99, 0.14);
+    color-scheme: light;
+  }
+}
+
+/* ------------------------------------------------------------------ base */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font-family: var(--font-body); font-size: 1rem; line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color .35s ease, color .35s ease;
+}
+h1, h2, h3 { font-family: var(--font-display); font-weight: 700; line-height: 1.05; margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+p { margin: 0; }
+a { color: var(--blue); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:hover { color: var(--accent); }
+code, kbd, pre { font-family: var(--font-mono); }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+.eyebrow { font-family: var(--font-display); font-weight: 500; font-size: .74rem; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+.lede { color: var(--muted); font-size: 1.08rem; max-width: 58ch; }
+.mono { font-family: var(--font-mono); font-size: .85em; }
+.num { font-variant-numeric: tabular-nums; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ------------------------------------------------------------------ shell */
+.shell { display: grid; grid-template-columns: var(--rail) minmax(0, 1fr); min-height: 100vh; }
+@media (max-width: 900px) { .shell { grid-template-columns: 1fr; } }
+
+/* ---- rail: the engine-mode selector */
+.rail {
+  position: sticky; top: 0; height: 100vh; align-self: start;
+  background: var(--surface); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 1.5rem; padding: 1.5rem 1.25rem;
+  transition: background-color .35s ease;
+}
+@media (max-width: 900px) {
+  .rail { position: sticky; height: auto; border-right: 0; border-bottom: 1px solid var(--border); z-index: 5; padding: .85rem 1rem; gap: .85rem; }
+  .rail .rail-foot, .rail .duty { display: none; }
+}
+.brand { display: flex; align-items: center; gap: .75rem; text-decoration: none; color: inherit; }
+.brand img { width: 40px; height: 40px; border-radius: 50%; background: var(--bezel); box-shadow: 0 0 0 1px var(--border-hi); }
+.brand b { font-family: var(--font-display); font-weight: 800; font-size: 1.3rem; letter-spacing: .06em; text-transform: uppercase; }
+.brand small { display: block; font-family: var(--font-display); font-weight: 500; font-size: .66rem; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+
+.selector { display: grid; gap: .4rem; }
+.selector .eyebrow { margin-bottom: .2rem; }
+.mode {
+  display: grid; grid-template-columns: 1.6rem 1fr auto; align-items: center; gap: .6rem;
+  padding: .6rem .7rem; border: 1px solid var(--border); border-radius: 4px;
+  background: transparent; cursor: pointer; text-align: left;
+  transition: background-color .2s, border-color .2s, transform .15s;
+}
+.mode:hover { background: var(--border); }
+.mode[aria-pressed="true"] { border-color: var(--accent); background: var(--sel); }
+.mode .dot { width: 1.6rem; height: 1.6rem; border-radius: 50%; border: 1px solid var(--border-hi); background: var(--swatch); }
+.mode .name { font-family: var(--font-display); font-weight: 700; font-size: 1rem; letter-spacing: .04em; text-transform: uppercase; }
+.mode .mach { font-family: var(--font-display); font-weight: 300; font-size: .8rem; color: var(--muted); }
+.mode kbd { font-size: .68rem; color: var(--muted); border: 1px solid var(--border-hi); border-radius: 3px; padding: 0 .35em; }
+@media (max-width: 900px) {
+  .selector { grid-template-columns: repeat(3, 1fr); }
+  .selector .eyebrow { display: none; }
+  .mode { grid-template-columns: auto 1fr; padding: .5rem .6rem; }
+  .mode .mach, .mode kbd { display: none; }
+}
+
+.duty { display: grid; gap: .55rem; }
+.duty .bar { display: grid; grid-template-columns: 5.2rem 1fr 2.6rem; align-items: center; gap: .5rem; font-size: .8rem; }
+.duty .bar span:first-child { font-family: var(--font-display); font-weight: 500; letter-spacing: .06em; text-transform: uppercase; font-size: .7rem; color: var(--muted); }
+.duty .track { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.duty .fill { height: 100%; background: var(--accent); width: 0; transition: width .6s cubic-bezier(.2,.8,.2,1); }
+.duty .bar.current span:first-child { color: var(--text); }
+.duty .bar:not(.current) .fill { background: var(--border-hi); }
+.duty .note { font-size: .72rem; color: var(--ghost); line-height: 1.4; }
+
+.rail-foot { margin-top: auto; display: grid; gap: .6rem; font-size: .8rem; color: var(--muted); }
+.rail-foot a { color: var(--muted); }
+.rail-foot a:hover { color: var(--accent); }
+
+/* ---- battery advice */
+.advice {
+  display: none; align-items: center; gap: .6rem; padding: .6rem .7rem; border-radius: 4px;
+  background: var(--sel); border: 1px solid var(--accent); font-size: .8rem; line-height: 1.35;
+}
+.advice[data-show="1"] { display: flex; }
+.advice button { border: 0; background: var(--accent); color: var(--bezel); font-weight: 600; padding: .3rem .55rem; border-radius: 3px; cursor: pointer; white-space: nowrap; }
+.advice .x { background: transparent; color: var(--muted); padding: 0 .2rem; }
+
+/* ------------------------------------------------------------------ main */
+main { min-width: 0; }
+section { padding: clamp(2.5rem, 6vw, 5rem) clamp(1.25rem, 5vw, 4rem); border-bottom: 1px solid var(--border); }
+section > header { display: grid; gap: .6rem; margin-bottom: 2rem; max-width: 64ch; }
+section h2 { font-size: clamp(1.7rem, 3vw, 2.4rem); }
+
+/* ---- hero */
+.hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 3rem; align-items: center; position: relative; overflow: hidden; }
+@media (max-width: 1100px) { .hero { grid-template-columns: 1fr; } }
+.hero h1 { font-size: clamp(3rem, 7vw, 6rem); font-weight: 800; text-transform: uppercase; letter-spacing: .02em; }
+.hero h1 em { font-style: normal; color: var(--accent); }
+.hero .hero-copy { display: grid; gap: 1.2rem; }
+.hero .cta { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; }
+.btn {
+  display: inline-flex; align-items: center; gap: .5rem; padding: .7rem 1.1rem; border-radius: 4px;
+  font-family: var(--font-display); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; font-size: .85rem;
+  text-decoration: none; cursor: pointer; border: 1px solid var(--border-hi); background: var(--surface); color: var(--text);
+  transition: transform .15s, background-color .2s, border-color .2s;
+}
+.btn:hover { transform: translateY(-1px); border-color: var(--accent); color: var(--text); }
+.btn.primary { background: var(--accent); color: var(--bezel); border-color: var(--accent); }
+.btn.primary:hover { color: var(--bezel); }
+.stat-row { display: flex; flex-wrap: wrap; gap: 1.5rem 2.5rem; padding-top: .5rem; }
+.stat-row div { display: grid; gap: .1rem; }
+.stat-row b { font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; line-height: 1; }
+.stat-row span { font-size: .78rem; color: var(--muted); }
+
+.emblem { position: relative; display: grid; place-items: center; aspect-ratio: 1; max-width: 440px; margin-inline: auto; width: 100%; perspective: 900px; }
+.emblem .ring {
+  position: absolute; inset: 4%; border-radius: 50%;
+  background: conic-gradient(from var(--spool), transparent 0 62%, var(--accent) 78%, transparent 92%);
+  filter: blur(14px); opacity: .55; pointer-events: none;
+}
+.emblem .halo { position: absolute; inset: -10%; border-radius: 50%; background: radial-gradient(circle at var(--px, 50%) var(--py, 50%), var(--glow), transparent 60%); pointer-events: none; }
+.emblem .bezel {
+  position: relative; width: 82%; aspect-ratio: 1; border-radius: 50%; background: var(--bezel);
+  box-shadow: 0 0 0 1px var(--border-hi), 0 30px 80px -30px rgba(0,0,0,.8), inset 0 0 40px rgba(0,0,0,.6);
+  display: grid; place-items: center; transform: rotateX(var(--tx, 0deg)) rotateY(var(--ty, 0deg));
+  transition: transform .12s ease-out; will-change: transform;
+}
+.emblem .bezel::after { content: ""; position: absolute; inset: 3%; border-radius: 50%; border: 1px solid rgba(255,255,255,.06); pointer-events: none; }
+.emblem img { width: 96%; height: 96%; border-radius: 50%; display: block; }
+.emblem .tick { position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(from 0deg, var(--border-hi) 0 .6deg, transparent .6deg 6deg); mask: radial-gradient(circle, transparent 46%, #000 47%, #000 49%, transparent 50%); -webkit-mask: radial-gradient(circle, transparent 46%, #000 47%, #000 49%, transparent 50%); opacity: .8; pointer-events: none; }
+
+/* ---- the Zed window */
+.zed-wrap { display: grid; gap: 1rem; }
+.zed-controls { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; font-size: .82rem; color: var(--muted); }
+.chip { border: 1px solid var(--border-hi); background: var(--surface); border-radius: 999px; padding: .3rem .75rem; cursor: pointer; font-size: .8rem; color: var(--text); }
+.chip[aria-pressed="true"] { background: var(--sel); border-color: var(--accent); }
+.chip:hover { border-color: var(--accent); }
+.zed {
+  --z-bg: var(--c-editor-background, var(--bg));
+  border: 1px solid var(--c-border, var(--border)); border-radius: 8px; overflow: hidden;
+  background: var(--c-background, var(--bg)); box-shadow: 0 40px 90px -40px rgba(0,0,0,.7);
+  font-family: var(--font-mono); font-size: 13px; line-height: 1.55; color: var(--c-text, var(--text));
+  display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+  height: min(640px, 80vh); min-height: 480px;
+}
+.z-title { display: flex; align-items: center; gap: .6rem; padding: .45rem .8rem; background: var(--c-title_bar-background); border-bottom: 1px solid var(--c-border-variant); font-family: var(--font-body); font-size: 12px; color: var(--c-text-muted); }
+.z-title .lights { display: flex; gap: 6px; margin-right: .4rem; }
+.z-title .lights i { width: 11px; height: 11px; border-radius: 50%; background: var(--c-element-active); }
+.z-title .proj { color: var(--c-text); font-weight: 600; }
+.z-title .who { margin-left: auto; display: flex; gap: 6px; }
+.z-title .who i { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--c-background); }
+.z-tabs { display: flex; align-items: stretch; background: var(--c-tab_bar-background); border-bottom: 1px solid var(--c-border); overflow-x: auto; }
+.z-tab { display: flex; align-items: center; gap: .5rem; padding: .5rem .9rem; border-right: 1px solid var(--c-border); background: var(--c-tab-inactive_background); color: var(--c-text-muted); cursor: pointer; border-top: 2px solid transparent; font-family: var(--font-body); font-size: 12px; white-space: nowrap; border-bottom: 0; }
+.z-tab:hover { background: var(--c-ghost_element-hover); }
+.z-tab[aria-selected="true"] { background: var(--c-tab-active_background); color: var(--c-text); border-top-color: var(--c-text-accent); }
+.z-tab .st { font-size: 10px; }
+.z-body { display: grid; grid-template-columns: 200px minmax(0, 1fr); min-height: 0; }
+@media (max-width: 700px) { .z-body { grid-template-columns: 1fr; } .z-panel { display: none; } }
+.z-panel { background: var(--c-panel-background); border-right: 1px solid var(--c-border); padding: .5rem 0; overflow: auto; font-family: var(--font-body); font-size: 12px; }
+.z-panel .hd { padding: .3rem .8rem .5rem; color: var(--c-text-muted); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; font-size: 10px; }
+.z-row { display: flex; align-items: center; gap: .45rem; padding: .22rem .8rem; padding-left: calc(.8rem + var(--d, 0) * 14px); cursor: pointer; color: var(--c-text); position: relative; white-space: nowrap; }
+.z-row:hover { background: var(--c-ghost_element-hover); }
+.z-row[aria-selected="true"] { background: var(--c-ghost_element-selected); }
+.z-row .g { position: absolute; left: calc(.8rem + 5px); top: 0; bottom: 0; width: 1px; background: var(--c-panel-indent_guide); }
+.z-row .g.a { background: var(--c-panel-indent_guide_active); }
+.z-row .ic { color: var(--c-icon-muted); font-size: 10px; width: 10px; text-align: center; }
+.z-row.mod { color: var(--c-modified); } .z-row.add { color: var(--c-created); } .z-row.ign { color: var(--c-ignored); }
+.z-editor { position: relative; overflow: auto; background: var(--z-bg); }
+.z-editor .crumbs { position: sticky; top: 0; z-index: 2; background: var(--c-toolbar-background); border-bottom: 1px solid var(--c-border-variant); padding: .3rem .8rem; font-family: var(--font-body); font-size: 11px; color: var(--c-text-muted); display: flex; gap: .4rem; }
+.z-editor .crumbs b { color: var(--c-text); font-weight: 500; }
+.code { display: grid; padding: .4rem 0 1rem; }
+.ln { display: grid; grid-template-columns: 3.2rem 3px minmax(0, 1fr); align-items: stretch; min-height: 1.55em; }
+.ln .n { text-align: right; padding-right: .6rem; color: var(--c-editor-line_number); user-select: none; background: var(--c-editor-gutter-background); }
+.ln .vc { background: transparent; }
+.ln .vc.add { background: var(--c-version_control-added); }
+.ln .vc.mod { background: var(--c-version_control-modified); }
+.ln .vc.del { background: var(--c-version_control-deleted); }
+.ln .t { padding-left: .9rem; white-space: pre; position: relative; }
+.ln.active .n { color: var(--c-editor-active_line_number); }
+.ln.active .t, .ln.active .n { background-color: var(--c-editor-active_line-background); }
+.ln.added .t { background-color: var(--c-editor-diff_hunk-added-background); }
+.ln.deleted .t { background-color: var(--c-editor-diff_hunk-deleted-background); }
+.ln .guide { display: inline-block; width: 0; border-left: 1px solid var(--c-editor-indent_guide); margin-right: calc(2ch - 1px); }
+.ln .guide.on { border-left-color: var(--c-editor-indent_guide_active); }
+.s { color: var(--syn, inherit); font-style: var(--syn-style, normal); font-weight: var(--syn-w, 400); }
+.s.sel { background: var(--c-players-0-selection); }
+.s.rd { background: var(--c-editor-document_highlight-read_background); }
+.s.wr { background: var(--c-editor-document_highlight-write_background); }
+.s.br { background: var(--c-editor-document_highlight-bracket_background); }
+.s.err { text-decoration: wavy underline var(--c-error); text-decoration-skip-ink: none; }
+.s.warn { text-decoration: wavy underline var(--c-warning); text-decoration-skip-ink: none; }
+.s.find { background: var(--c-search-match_background); }
+.s.find.on { background: var(--c-search-active_match_background); }
+.hint { color: var(--c-hint); background: var(--c-hint-background); border-radius: 3px; padding: 0 .3em; font-style: italic; font-size: .92em; }
+.cursor { display: inline-block; width: 2px; height: 1.2em; background: var(--c-players-0-cursor); vertical-align: text-bottom; margin-left: -1px; animation: blink 1.1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.pop {
+  position: absolute; right: 1.2rem; top: 5.6rem; max-width: 300px; z-index: 3;
+  background: var(--c-elevated_surface-background); border: 1px solid var(--c-border); border-radius: 6px;
+  box-shadow: 0 16px 40px -16px rgba(0,0,0,.7); font-family: var(--font-body); font-size: 12px; overflow: hidden;
+}
+.pop .d { padding: .5rem .7rem; background: var(--c-error-background); border-left: 3px solid var(--c-error-border); display: flex; gap: .5rem; }
+.pop .d i { color: var(--c-error); font-style: normal; font-weight: 700; }
+.pop .a { padding: .4rem .7rem; color: var(--c-text-muted); border-top: 1px solid var(--c-border-variant); }
+.pop .a b { color: var(--c-text-accent); font-weight: 500; }
+.z-term { border-top: 1px solid var(--c-border); background: var(--c-terminal-background); color: var(--c-terminal-foreground); padding: .5rem .8rem; height: 118px; overflow: hidden; white-space: pre; font-size: 12.5px; line-height: 1.5; }
+.z-term .hdr { font-family: var(--font-body); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--c-text-muted); margin-bottom: .2rem; }
+.z-status { display: flex; align-items: center; gap: .9rem; padding: .3rem .8rem; background: var(--c-status_bar-background); border-top: 1px solid var(--c-border); font-family: var(--font-body); font-size: 11.5px; color: var(--c-text-muted); flex-wrap: wrap; }
+.z-status .pill { padding: .1rem .55rem; border-radius: 3px; font-weight: 600; letter-spacing: .06em; cursor: pointer; border: 0; font-size: 11px; color: var(--c-text); background: var(--c-vim-normal-background); }
+.z-status .diag { display: inline-flex; gap: .6rem; }
+.z-status .e { color: var(--c-error); } .z-status .w { color: var(--c-warning); }
+.z-status .right { margin-left: auto; display: inline-flex; gap: .9rem; }
+.z-status .acc { color: var(--c-text-accent); }
+
+/* ---- tokens */
+.gauges { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: .75rem; }
+.gauge { display: grid; gap: .45rem; padding: .7rem; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); cursor: pointer; text-align: left; transition: border-color .2s, transform .15s; }
+.gauge:hover { border-color: var(--accent); transform: translateY(-2px); }
+.gauge .sw { height: 46px; border-radius: 4px; border: 1px solid var(--border-hi); background: var(--sw); display: grid; place-items: center; font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; color: var(--on, var(--text)); }
+.gauge .lbl { display: flex; justify-content: space-between; align-items: baseline; gap: .5rem; }
+.gauge .lbl b { font-family: var(--font-display); font-weight: 500; letter-spacing: .08em; text-transform: uppercase; font-size: .72rem; }
+.gauge .lbl code { font-size: .72rem; color: var(--muted); }
+.gauge .cr { font-size: .74rem; color: var(--muted); display: flex; justify-content: space-between; }
+.gauge .cr .ok { color: var(--green); font-weight: 600; } .gauge .cr .aa { color: var(--accent); font-weight: 600; } .gauge .cr .ex { color: var(--ghost); }
+.legend { margin-top: 1.2rem; font-size: .82rem; color: var(--muted); max-width: 70ch; }
+
+/* ---- layers */
+.layers { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem; }
+.layer { display: grid; gap: .5rem; padding: 1.1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; }
+.layer h3 { font-size: 1.05rem; letter-spacing: .06em; text-transform: uppercase; }
+.layer p { color: var(--muted); font-size: .9rem; }
+.layer .chain { display: flex; flex-wrap: wrap; gap: .35rem; }
+.layer .chain span { font-family: var(--font-mono); font-size: .74rem; padding: .15rem .45rem; border-radius: 3px; background: var(--bg); border: 1px solid var(--border-hi); }
+
+/* ---- install */
+.steps { display: grid; gap: 1.25rem; max-width: 72ch; }
+.step { display: grid; grid-template-columns: 2.6rem minmax(0, 1fr); gap: 1rem; align-items: start; }
+.step .k { font-family: var(--font-display); font-weight: 800; font-size: 1.6rem; line-height: 1; color: var(--accent); padding-top: .15rem; }
+.step h3 { font-size: 1.2rem; margin-bottom: .35rem; }
+.step p { color: var(--muted); font-size: .95rem; }
+.cmd { position: relative; margin-top: .6rem; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); overflow: auto; }
+.cmd pre { margin: 0; padding: .85rem 6.5rem .85rem 1rem; font-size: .84rem; line-height: 1.55; white-space: pre; }
+.cmd .copy { position: absolute; top: .5rem; right: .5rem; border: 1px solid var(--border-hi); background: var(--elevated); border-radius: 4px; padding: .25rem .6rem; font-size: .72rem; cursor: pointer; font-family: var(--font-display); letter-spacing: .06em; text-transform: uppercase; }
+.cmd .copy:hover { border-color: var(--accent); }
+.cmd .copy[data-done="1"] { color: var(--green); border-color: var(--green); }
+.cmd .k1 { color: var(--purple); } .cmd .k2 { color: var(--green); } .cmd .k3 { color: var(--blue); } .cmd .k4 { color: var(--muted); }
+.palette { display: inline-flex; align-items: center; gap: .4rem; border: 1px solid var(--border-hi); background: var(--elevated); padding: .12rem .5rem; border-radius: 4px; font-family: var(--font-mono); font-size: .82em; }
+.when { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: .75rem; margin-top: 2rem; }
+.when div { padding: .9rem 1rem; border-left: 3px solid var(--acc); background: var(--surface); border-radius: 0 6px 6px 0; }
+.when b { font-family: var(--font-display); letter-spacing: .06em; text-transform: uppercase; display: block; margin-bottom: .2rem; }
+.when p { color: var(--muted); font-size: .88rem; }
+
+/* ---- contrast */
+.ctable { width: 100%; border-collapse: collapse; font-size: .84rem; }
+.ctable th, .ctable td { text-align: left; padding: .5rem .6rem; border-bottom: 1px solid var(--border); }
+.ctable th { font-family: var(--font-display); font-weight: 500; letter-spacing: .08em; text-transform: uppercase; font-size: .7rem; color: var(--muted); }
+.ctable td.v { font-variant-numeric: tabular-nums; font-family: var(--font-mono); font-size: .8rem; }
+.ctable .b { display: inline-block; min-width: 3.2em; text-align: center; padding: 0 .35em; border-radius: 3px; font-family: var(--font-display); font-weight: 700; font-size: .7rem; letter-spacing: .06em; }
+.ctable .b.aaa { background: var(--green); color: var(--bezel); } .ctable .b.aa { background: var(--accent); color: var(--bezel); } .ctable .b.ex { background: var(--border-hi); color: var(--text); }
+.tscroll { overflow-x: auto; }
+
+footer { padding: 2rem clamp(1.25rem, 5vw, 4rem); display: flex; flex-wrap: wrap; gap: 1rem 2rem; align-items: center; color: var(--muted); font-size: .84rem; }
+footer img { width: 28px; height: 28px; border-radius: 50%; background: var(--bezel); }
+
+.toast { position: fixed; bottom: 1.2rem; left: 50%; transform: translate(-50%, 20px); opacity: 0; background: var(--elevated); color: var(--text); border: 1px solid var(--border-hi); border-radius: 6px; padding: .55rem .9rem; font-size: .85rem; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 20; box-shadow: 0 20px 40px -20px rgba(0,0,0,.6); }
+.toast[data-on="1"] { opacity: 1; transform: translate(-50%, 0); }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .emblem .ring { display: none; }
+  .emblem .bezel { transition: none; transform: none !important; }
+  .cursor { animation: none; }
+  .btn, .gauge, .mode { transition: none; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="rail" aria-label="Variant selector">
+    <a class="brand" href="#top">
+      <img src="assets/logo-320.png" alt="Turbine logo: a jet turbine fan with a T at its hub" width="40" height="40">
+      <span><b>Turbine</b><small>Zed theme family</small></span>
+    </a>
+
+    <div class="selector" role="group" aria-label="Choose a variant">
+      <span class="eyebrow">Regime</span>
+      <button class="mode" data-variant="hypersonic" aria-pressed="false" style="--swatch:#000000">
+        <span class="dot" aria-hidden="true"></span>
+        <span><span class="name">Hypersonic</span><br><span class="mach">OLED black · battery</span></span>
+        <kbd>1</kbd>
+      </button>
+      <button class="mode" data-variant="supersonic" aria-pressed="false" style="--swatch:#14171A">
+        <span class="dot" aria-hidden="true"></span>
+        <span><span class="name">Supersonic</span><br><span class="mach">Dark · desk default</span></span>
+        <kbd>2</kbd>
+      </button>
+      <button class="mode" data-variant="subsonic" aria-pressed="false" style="--swatch:#F7F4EF">
+        <span class="dot" aria-hidden="true"></span>
+        <span><span class="name">Subsonic</span><br><span class="mach">Light · daylight</span></span>
+        <kbd>3</kbd>
+      </button>
+    </div>
+
+    <div class="advice" id="advice" data-show="0" role="status">
+      <span id="advice-text">You're on battery. Hypersonic lights the fewest pixels.</span>
+      <button type="button" id="advice-go">Switch</button>
+      <button type="button" class="x" id="advice-x" aria-label="Dismiss">×</button>
+    </div>
+
+    <div class="duty" aria-label="Estimated OLED emission by variant">
+      <span class="eyebrow">Canvas emission</span>
+      <div class="bar" data-v="hypersonic"><span>Hyper</span><div class="track"><div class="fill"></div></div><span class="num"></span></div>
+      <div class="bar" data-v="supersonic"><span>Super</span><div class="track"><div class="fill"></div></div><span class="num"></span></div>
+      <div class="bar" data-v="subsonic"><span>Sub</span><div class="track"><div class="fill"></div></div><span class="num"></span></div>
+      <p class="note">Relative luminance of the editor canvas, gutter and chrome, weighted by screen area. An estimate from the tokens, not a measurement.</p>
+    </div>
+
+    <div class="rail-foot">
+      <a href="https://github.com/chrisnicholson30/turbine-theme">github.com/chrisnicholson30/turbine-theme</a>
+      <span>MIT licence · v0.1.0</span>
+    </div>
+  </aside>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow">A theme family for Zed</span>
+        <h1>Tur<em>bine</em></h1>
+        <p class="lede">Three regimes, one token model. Hypersonic runs the editor on true OLED black. Supersonic is the desk default. Subsonic is for daylight and glare. Every text pair in every variant clears WCAG AA.</p>
+        <div class="cta">
+          <a class="btn primary" href="#install">Install</a>
+          <a class="btn" href="#window">See it running</a>
+        </div>
+        <div class="stat-row">
+          <div><b class="num">189</b><span>schema keys, all set</span></div>
+          <div><b class="num">49</b><span>syntax captures</span></div>
+          <div><b class="num">0</b><span>AA failures</span></div>
+          <div><b id="stat-text" class="num">14.2:1</b><span>text on canvas, this variant</span></div>
+        </div>
+      </div>
+      <div class="emblem" id="emblem">
+        <div class="halo"></div>
+        <div class="ring"></div>
+        <div class="bezel">
+          <div class="tick"></div>
+          <img src="assets/logo.png" alt="" width="768" height="768" decoding="async">
+        </div>
+      </div>
+    </section>
+
+    <section id="window">
+      <header>
+        <span class="eyebrow">The theme itself</span>
+        <h2>A Zed window, painted from the theme file</h2>
+        <p class="lede">Every colour below is read from <code>turbine.json</code> at load. Switch regimes in the rail, click the tabs, cycle the vim pill, or toggle the diff view.</p>
+      </header>
+      <div class="zed-wrap">
+        <div class="zed-controls">
+          <button class="chip" id="toggle-diff" aria-pressed="false">Show diff rows</button>
+          <button class="chip" id="toggle-find" aria-pressed="false">Search for “regime”</button>
+          <span>Current: <b id="variant-name">Turbine Supersonic</b></span>
+        </div>
+        <div class="zed" id="zed" aria-label="Mock Zed window">
+          <div class="z-title">
+            <span class="lights" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="proj">turbine-theme</span><span>·</span><span>main</span>
+            <span class="who" aria-hidden="true"><i style="background:var(--c-players-1-background)"></i><i style="background:var(--c-players-2-background)"></i></span>
+          </div>
+          <div class="z-tabs" role="tablist" id="tabs"></div>
+          <div class="z-body">
+            <div class="z-panel" id="tree" aria-label="Project panel"></div>
+            <div class="z-editor" id="editor">
+              <div class="crumbs" id="crumbs"></div>
+              <div class="code" id="code"></div>
+              <div class="pop" id="pop">
+                <div class="d"><i>✕</i><span>cannot find value <code>ceiling</code> in this scope. Did you mean <code>ceil</code>?</span></div>
+                <div class="a">Quick fix available · <b>rust-analyzer</b></div>
+              </div>
+            </div>
+          </div>
+          <div class="z-term" id="term"><div class="hdr">Terminal</div></div>
+          <div class="z-status">
+            <button class="pill" id="vim" title="Click to cycle vim modes">-- NORMAL --</button>
+            <span class="diag"><span class="e">✕ 1</span><span class="w">▲ 2</span></span>
+            <span>⎇ main</span>
+            <span class="right"><span id="pos" class="num">Ln 11, Col 13</span><span>Rust</span><span class="acc" id="status-theme">Turbine Supersonic</span></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tokens">
+      <header>
+        <span class="eyebrow">Instruments</span>
+        <h2>Eighteen tokens drive the whole file</h2>
+        <p class="lede">Each gauge shows the token in the current regime and its contrast against the canvas. Click a swatch to copy the hex.</p>
+      </header>
+      <div class="gauges" id="gauges"></div>
+      <p class="legend">AA is 4.5:1, AAA is 7:1. Dividers and disabled text sit below the floor on purpose: dividers are decoration, and disabled text is exempt under WCAG 1.4.3. Focus rings use the accent, which clears 3:1 for non-text UI in every regime.</p>
+      <div class="layers" style="margin-top:2rem">
+        <div class="layer"><h3>Surface</h3><div class="chain"><span>bg</span><span>surface</span><span>elevated</span></div><p>Three depths, never more. Canvas, panels, popovers.</p></div>
+        <div class="layer"><h3>Content</h3><div class="chain"><span>text</span><span>muted</span><span>ghost</span><span>disabled</span></div><p>Four weights. Ghost is the legible floor for predictive text and placeholders.</p></div>
+        <div class="layer"><h3>Line</h3><div class="chain"><span>border</span><span>border_hi</span><span>accent</span></div><p>Dividers, active rails, focus. The two neutrals also form the hover → pressed ramp.</p></div>
+        <div class="layer"><h3>Signal</h3><div class="chain"><span>accent</span><span>blue</span><span>green</span><span>yellow</span><span>orange</span><span>red</span><span>purple</span></div><p>Seven hues, one semantic job each. Types are teal, functions blue, strings green, numbers yellow, attributes orange, errors red, keywords purple.</p></div>
+      </div>
+    </section>
+
+    <section id="install">
+      <header>
+        <span class="eyebrow">Pre-flight</span>
+        <h2>Install in three steps</h2>
+        <p class="lede">Turbine ships as a Zed extension. Until it lands in the extension store, install it as a dev extension straight from the repository.</p>
+      </header>
+      <div class="steps">
+        <div class="step">
+          <div class="k">1</div>
+          <div>
+            <h3>Clone the repository</h3>
+            <p>Anywhere on disk. The theme lives in <code>themes/turbine.json</code>; the manifest is <code>extension.toml</code>.</p>
+            <div class="cmd"><pre><span class="k1">git</span> clone https://github.com/chrisnicholson30/turbine-theme.git</pre><button class="copy" data-copy="git clone https://github.com/chrisnicholson30/turbine-theme.git">Copy</button></div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="k">2</div>
+          <div>
+            <h3>Install it as a dev extension</h3>
+            <p>Open the command palette in Zed (<kbd>⌘</kbd><kbd>⇧</kbd><kbd>P</kbd> on macOS, <kbd>Ctrl</kbd><kbd>⇧</kbd><kbd>P</kbd> elsewhere), run <span class="palette">zed: install dev extension</span> and pick the cloned folder. Zed loads it immediately.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="k">3</div>
+          <div>
+            <h3>Pick a regime</h3>
+            <p>Run <span class="palette">theme selector</span> and choose <b>Turbine Hypersonic</b>, <b>Turbine Supersonic</b> or <b>Turbine Subsonic</b>. To follow the OS instead, set light and dark variants in <code>settings.json</code>:</p>
+            <div class="cmd"><pre><span class="k4">// settings.json</span>
+<span class="k1">"theme"</span>: {
+  <span class="k1">"mode"</span>: <span class="k2">"system"</span>,
+  <span class="k1">"light"</span>: <span class="k2">"Turbine Subsonic"</span>,
+  <span class="k1">"dark"</span>: <span class="k2" id="settings-dark">"Turbine Supersonic"</span>
+}</pre><button class="copy" data-copy-el="settings-snippet">Copy</button></div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="k">+</div>
+          <div>
+            <h3>Keep it current</h3>
+            <p>The dev extension reads the folder on disk, so <code>git pull</code> is the update. To rebuild the theme from its tokens and run the schema and contrast gates yourself:</p>
+            <div class="cmd"><pre><span class="k1">python3</span> build/build_theme.py
+<span class="k1">python3</span> build/validate_turbine.py themes/turbine.json build/schema_keys.txt
+<span class="k4"># → PASS — ready to ship</span></pre><button class="copy" data-copy="python3 build/build_theme.py&#10;python3 build/validate_turbine.py themes/turbine.json build/schema_keys.txt">Copy</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="when">
+        <div style="--acc:#4FE3C1"><b>Hypersonic</b><p>Laptops on battery, OLED displays, low light. A black pixel is an unlit pixel, so the canvas, gutter and terminal are all #000000.</p></div>
+        <div style="--acc:#3FD3B4"><b>Supersonic</b><p>The desk default. Real but modest OLED savings, tuned for multi-hour comfort on any panel.</p></div>
+        <div style="--acc:#0C7763"><b>Subsonic</b><p>Daylight, glare, outdoor work. Not a battery saver: on OLED it is the most expensive of the three.</p></div>
+      </div>
+    </section>
+
+    <section id="contrast">
+      <header>
+        <span class="eyebrow">Verified, not asserted</span>
+        <h2>Contrast in the current regime</h2>
+        <p class="lede">Computed live from the theme file with the WCAG 2.1 relative-luminance formula, the same maths as the repository's validator.</p>
+      </header>
+      <div class="tscroll"><table class="ctable" id="ctable">
+        <thead><tr><th>Pair</th><th>Ratio</th><th>Grade</th><th>Where you see it</th></tr></thead>
+        <tbody></tbody>
+      </table></div>
+    </section>
+  </main>
+</div>
+
+<footer>
+  <img src="assets/logo-320.png" alt="" width="28" height="28">
+  <span>Turbine · Christopher Nicholson · MIT</span>
+  <a href="https://github.com/chrisnicholson30/turbine-theme">Source</a>
+  <a href="https://github.com/chrisnicholson30/turbine-theme/blob/main/docs/decisions.md">Design decisions</a>
+  <a href="https://github.com/chrisnicholson30/turbine-theme/blob/main/docs/contrast.md">Full contrast report</a>
+</footer>
+<div class="toast" id="toast" data-on="0" role="status"></div>
+
+<script id="turbine-theme" type="application/json">{"$schema":"https://zed.dev/schema/themes/v0.2.0.json","name":"Turbine","author":"Christopher Nicholson","themes":[{"name":"Turbine Hypersonic","appearance":"dark","style":{"background":"#000000","background.appearance":"opaque","surface.background":"#0E1113","elevated_surface.background":"#16191C","border":"#23282D","border.variant":"#23282D","border.focused":"#4FE3C1","border.selected":"#4FE3C1","border.transparent":"#00000000","border.disabled":"#23282D","text":"#EDEBE6","text.muted":"#99A1A8","text.placeholder":"#7B838A","text.disabled":"#5C646B","text.accent":"#4FE3C1","icon":"#EDEBE6","icon.muted":"#99A1A8","icon.placeholder":"#7B838A","icon.disabled":"#5C646B","icon.accent":"#4FE3C1","link_text.hover":"#4FE3C1","element.background":"#0E1113","element.hover":"#23282D","element.active":"#39424A","element.selected":"#123A38","element.disabled":"#0E1113","element.selection_background":"#4FE3C140","ghost_element.background":"#00000000","ghost_element.hover":"#23282D","ghost_element.active":"#39424A","ghost_element.selected":"#123A38","ghost_element.disabled":"#00000000","drop_target.background":"#4FE3C133","drop_target.border":"#4FE3C1","title_bar.background":"#0E1113","title_bar.inactive_background":"#000000","status_bar.background":"#0E1113","toolbar.background":"#000000","tab_bar.background":"#0E1113","tab.active_background":"#000000","tab.inactive_background":"#0E1113","panel.background":"#0E1113","panel.overlay_background":"#0E1113","panel.overlay_hover":"#23282D","panel.focused_border":"#4FE3C1","panel.indent_guide":"#23282D","panel.indent_guide_active":"#39424A","panel.indent_guide_hover":"#39424A","pane.focused_border":"#4FE3C1","pane_group.border":"#23282D","scrollbar.thumb.background":"#23282D","scrollbar.thumb.hover_background":"#39424A","scrollbar.thumb.active_background":"#5C646B","scrollbar.thumb.border":"#00000000","scrollbar.track.background":"#00000000","scrollbar.track.border":"#00000000","minimap.thumb.background":"#39424A66","minimap.thumb.hover_background":"#39424A99","minimap.thumb.active_background":"#39424AB3","minimap.thumb.border":"#39424A","search.match_background":"#123A38","search.active_match_background":"#4FE3C166","debugger.accent":"#FF7B72","editor.foreground":"#EDEBE6","editor.background":"#000000","editor.gutter.background":"#000000","editor.subheader.background":"#0E1113","editor.active_line.background":"#0B0E10","editor.highlighted_line.background":"#4FE3C126","editor.debugger_active_line.background":"#F2C94C33","editor.line_number":"#99A1A8","editor.active_line_number":"#EDEBE6","editor.hover_line_number":"#EDEBE6","editor.invisible":"#5C646B","editor.wrap_guide":"#23282D","editor.active_wrap_guide":"#39424A","editor.indent_guide":"#23282D","editor.indent_guide_active":"#39424A","editor.document_highlight.read_background":"#4FE3C133","editor.document_highlight.write_background":"#F2C94C33","editor.document_highlight.bracket_background":"#123A38","editor.diff_hunk.added.background":"#7BE38B1F","editor.diff_hunk.added.hollow_background":"#7BE38B0F","editor.diff_hunk.added.hollow_border":"#7BE38B5C","editor.diff_hunk.deleted.background":"#FF7B721F","editor.diff_hunk.deleted.hollow_background":"#FF7B720F","editor.diff_hunk.deleted.hollow_border":"#FF7B725C","version_control.added":"#7BE38B","version_control.deleted":"#FF7B72","version_control.modified":"#F2C94C","version_control.renamed":"#7FB4FF","version_control.conflict":"#FFB067","version_control.ignored":"#5C646B","version_control.word_added":"#7BE38B59","version_control.word_deleted":"#FF7B7259","version_control.conflict_marker.ours":"#7BE38B26","version_control.conflict_marker.theirs":"#7FB4FF26","vim.normal.background":"#4FE3C133","vim.normal.foreground":"#EDEBE6","vim.insert.background":"#7BE38B33","vim.insert.foreground":"#EDEBE6","vim.replace.background":"#FF7B7233","vim.replace.foreground":"#EDEBE6","vim.visual.background":"#D9A6FF33","vim.visual.foreground":"#EDEBE6","vim.visual_line.background":"#D9A6FF33","vim.visual_line.foreground":"#EDEBE6","vim.visual_block.background":"#D9A6FF33","vim.visual_block.foreground":"#EDEBE6","vim.helix_normal.background":"#4FE3C133","vim.helix_normal.foreground":"#EDEBE6","vim.helix_select.background":"#D9A6FF33","vim.helix_select.foreground":"#EDEBE6","vim.yank.background":"#F2C94C40","vim.helix_jump_label.foreground":"#FF7B72","conflict":"#FFB067","conflict.background":"#FFB0671F","conflict.border":"#FFB06766","created":"#7BE38B","created.background":"#7BE38B1F","created.border":"#7BE38B66","deleted":"#FF7B72","deleted.background":"#FF7B721F","deleted.border":"#FF7B7266","error":"#FF7B72","error.background":"#FF7B721F","error.border":"#FF7B7266","hidden":"#5C646B","hidden.background":"#5C646B1F","hidden.border":"#5C646B66","hint":"#4FE3C1","hint.background":"#4FE3C11F","hint.border":"#4FE3C166","ignored":"#5C646B","ignored.background":"#5C646B1F","ignored.border":"#5C646B66","info":"#7FB4FF","info.background":"#7FB4FF1F","info.border":"#7FB4FF66","modified":"#F2C94C","modified.background":"#F2C94C1F","modified.border":"#F2C94C66","predictive":"#7B838A","predictive.background":"#7B838A1F","predictive.border":"#7B838A66","renamed":"#7FB4FF","renamed.background":"#7FB4FF1F","renamed.border":"#7FB4FF66","success":"#7BE38B","success.background":"#7BE38B1F","success.border":"#7BE38B66","unreachable":"#5C646B","unreachable.background":"#5C646B1F","unreachable.border":"#5C646B66","warning":"#FFB067","warning.background":"#FFB0671F","warning.border":"#FFB06766","terminal.background":"#000000","terminal.foreground":"#EDEBE6","terminal.bright_foreground":"#EDEBE6","terminal.dim_foreground":"#99A1A8","terminal.ansi.background":"#000000","terminal.ansi.black":"#0E1113","terminal.ansi.red":"#FF7B72","terminal.ansi.green":"#7BE38B","terminal.ansi.yellow":"#F2C94C","terminal.ansi.blue":"#7FB4FF","terminal.ansi.magenta":"#D9A6FF","terminal.ansi.cyan":"#4FE3C1","terminal.ansi.white":"#99A1A8","terminal.ansi.bright_black":"#7B838A","terminal.ansi.bright_red":"#FF7B72","terminal.ansi.bright_green":"#7BE38B","terminal.ansi.bright_yellow":"#F2C94C","terminal.ansi.bright_blue":"#7FB4FF","terminal.ansi.bright_magenta":"#D9A6FF","terminal.ansi.bright_cyan":"#4FE3C1","terminal.ansi.bright_white":"#EDEBE6","terminal.ansi.dim_black":"#5C646B","terminal.ansi.dim_red":"#FF7B72","terminal.ansi.dim_green":"#7BE38B","terminal.ansi.dim_yellow":"#F2C94C","terminal.ansi.dim_blue":"#7FB4FF","terminal.ansi.dim_magenta":"#D9A6FF","terminal.ansi.dim_cyan":"#4FE3C1","terminal.ansi.dim_white":"#7B838A","players":[{"cursor":"#4FE3C1","background":"#4FE3C1","selection":"#123A38"},{"cursor":"#7FB4FF","background":"#7FB4FF","selection":"#7FB4FF40"},{"cursor":"#7BE38B","background":"#7BE38B","selection":"#7BE38B40"},{"cursor":"#F2C94C","background":"#F2C94C","selection":"#F2C94C40"},{"cursor":"#FFB067","background":"#FFB067","selection":"#FFB06740"},{"cursor":"#FF7B72","background":"#FF7B72","selection":"#FF7B7240"},{"cursor":"#D9A6FF","background":"#D9A6FF","selection":"#D9A6FF40"},{"cursor":"#99A1A8","background":"#99A1A8","selection":"#99A1A840"}],"accents":["#4FE3C1","#7FB4FF","#7BE38B","#F2C94C","#FFB067","#FF7B72","#D9A6FF"],"syntax":{"keyword":{"color":"#D9A6FF"},"keyword.import":{"color":"#D9A6FF"},"function":{"color":"#7FB4FF"},"function.method":{"color":"#7FB4FF"},"function.definition":{"color":"#7FB4FF"},"type":{"color":"#4FE3C1"},"constructor":{"color":"#4FE3C1"},"enum":{"color":"#4FE3C1"},"variant":{"color":"#FFB067"},"variable":{"color":"#EDEBE6"},"variable.special":{"color":"#FFB067","font_style":"italic"},"property":{"color":"#EDEBE6"},"constant":{"color":"#F2C94C"},"string":{"color":"#7BE38B"},"string.escape":{"color":"#FFB067"},"string.regex":{"color":"#FFB067"},"string.special":{"color":"#FFB067"},"string.special.symbol":{"color":"#FFB067"},"number":{"color":"#F2C94C"},"boolean":{"color":"#F2C94C"},"comment":{"color":"#99A1A8","font_style":"italic"},"comment.doc":{"color":"#99A1A8","font_style":"italic"},"operator":{"color":"#99A1A8"},"punctuation":{"color":"#99A1A8"},"punctuation.bracket":{"color":"#99A1A8"},"punctuation.delimiter":{"color":"#99A1A8"},"punctuation.list_marker":{"color":"#4FE3C1"},"punctuation.special":{"color":"#FFB067"},"attribute":{"color":"#FFB067"},"label":{"color":"#FFB067"},"tag":{"color":"#D9A6FF"},"preproc":{"color":"#D9A6FF"},"embedded":{"color":"#EDEBE6"},"emphasis":{"color":"#4FE3C1","font_style":"italic"},"emphasis.strong":{"color":"#4FE3C1","font_weight":700},"title":{"color":"#7FB4FF","font_weight":700},"link_text":{"color":"#7FB4FF","font_style":"italic"},"link_uri":{"color":"#7BE38B"},"text.literal":{"color":"#7BE38B"},"hint":{"color":"#4FE3C1","font_style":"italic"},"predictive":{"color":"#7B838A","font_style":"italic"},"primary":{"color":"#EDEBE6"},"variable.parameter":{"color":"#EDEBE6"},"namespace":{"color":"#EDEBE6"},"selector":{"color":"#D9A6FF"},"selector.pseudo":{"color":"#FFB067"},"punctuation.markup":{"color":"#99A1A8"},"diff.plus":{"color":"#7BE38B"},"diff.minus":{"color":"#FF7B72"}}}},{"name":"Turbine Supersonic","appearance":"dark","style":{"background":"#14171A","background.appearance":"opaque","surface.background":"#1B1F23","elevated_surface.background":"#22272C","border":"#2C3238","border.variant":"#2C3238","border.focused":"#3FD3B4","border.selected":"#3FD3B4","border.transparent":"#00000000","border.disabled":"#2C3238","text":"#E6E4E0","text.muted":"#9BA4AC","text.placeholder":"#868F97","text.disabled":"#646C74","text.accent":"#3FD3B4","icon":"#E6E4E0","icon.muted":"#9BA4AC","icon.placeholder":"#868F97","icon.disabled":"#646C74","icon.accent":"#3FD3B4","link_text.hover":"#3FD3B4","element.background":"#1B1F23","element.hover":"#2C3238","element.active":"#414A52","element.selected":"#1D3B39","element.disabled":"#1B1F23","element.selection_background":"#3FD3B440","ghost_element.background":"#00000000","ghost_element.hover":"#2C3238","ghost_element.active":"#414A52","ghost_element.selected":"#1D3B39","ghost_element.disabled":"#00000000","drop_target.background":"#3FD3B433","drop_target.border":"#3FD3B4","title_bar.background":"#1B1F23","title_bar.inactive_background":"#14171A","status_bar.background":"#1B1F23","toolbar.background":"#14171A","tab_bar.background":"#1B1F23","tab.active_background":"#14171A","tab.inactive_background":"#1B1F23","panel.background":"#1B1F23","panel.overlay_background":"#1B1F23","panel.overlay_hover":"#2C3238","panel.focused_border":"#3FD3B4","panel.indent_guide":"#2C3238","panel.indent_guide_active":"#414A52","panel.indent_guide_hover":"#414A52","pane.focused_border":"#3FD3B4","pane_group.border":"#2C3238","scrollbar.thumb.background":"#2C3238","scrollbar.thumb.hover_background":"#414A52","scrollbar.thumb.active_background":"#646C74","scrollbar.thumb.border":"#00000000","scrollbar.track.background":"#00000000","scrollbar.track.border":"#00000000","minimap.thumb.background":"#414A5266","minimap.thumb.hover_background":"#414A5299","minimap.thumb.active_background":"#414A52B3","minimap.thumb.border":"#414A52","search.match_background":"#1D3B39","search.active_match_background":"#3FD3B466","debugger.accent":"#F2736B","editor.foreground":"#E6E4E0","editor.background":"#14171A","editor.gutter.background":"#14171A","editor.subheader.background":"#1B1F23","editor.active_line.background":"#1A1E22","editor.highlighted_line.background":"#3FD3B426","editor.debugger_active_line.background":"#E6BA4533","editor.line_number":"#9BA4AC","editor.active_line_number":"#E6E4E0","editor.hover_line_number":"#E6E4E0","editor.invisible":"#646C74","editor.wrap_guide":"#2C3238","editor.active_wrap_guide":"#414A52","editor.indent_guide":"#2C3238","editor.indent_guide_active":"#414A52","editor.document_highlight.read_background":"#3FD3B433","editor.document_highlight.write_background":"#E6BA4533","editor.document_highlight.bracket_background":"#1D3B39","editor.diff_hunk.added.background":"#6FD47F1F","editor.diff_hunk.added.hollow_background":"#6FD47F0F","editor.diff_hunk.added.hollow_border":"#6FD47F5C","editor.diff_hunk.deleted.background":"#F2736B1F","editor.diff_hunk.deleted.hollow_background":"#F2736B0F","editor.diff_hunk.deleted.hollow_border":"#F2736B5C","version_control.added":"#6FD47F","version_control.deleted":"#F2736B","version_control.modified":"#E6BA45","version_control.renamed":"#6BA8F5","version_control.conflict":"#F0A05E","version_control.ignored":"#646C74","version_control.word_added":"#6FD47F59","version_control.word_deleted":"#F2736B59","version_control.conflict_marker.ours":"#6FD47F26","version_control.conflict_marker.theirs":"#6BA8F526","vim.normal.background":"#3FD3B433","vim.normal.foreground":"#E6E4E0","vim.insert.background":"#6FD47F33","vim.insert.foreground":"#E6E4E0","vim.replace.background":"#F2736B33","vim.replace.foreground":"#E6E4E0","vim.visual.background":"#C79BF033","vim.visual.foreground":"#E6E4E0","vim.visual_line.background":"#C79BF033","vim.visual_line.foreground":"#E6E4E0","vim.visual_block.background":"#C79BF033","vim.visual_block.foreground":"#E6E4E0","vim.helix_normal.background":"#3FD3B433","vim.helix_normal.foreground":"#E6E4E0","vim.helix_select.background":"#C79BF033","vim.helix_select.foreground":"#E6E4E0","vim.yank.background":"#E6BA4540","vim.helix_jump_label.foreground":"#F2736B","conflict":"#F0A05E","conflict.background":"#F0A05E1F","conflict.border":"#F0A05E66","created":"#6FD47F","created.background":"#6FD47F1F","created.border":"#6FD47F66","deleted":"#F2736B","deleted.background":"#F2736B1F","deleted.border":"#F2736B66","error":"#F2736B","error.background":"#F2736B1F","error.border":"#F2736B66","hidden":"#646C74","hidden.background":"#646C741F","hidden.border":"#646C7466","hint":"#3FD3B4","hint.background":"#3FD3B41F","hint.border":"#3FD3B466","ignored":"#646C74","ignored.background":"#646C741F","ignored.border":"#646C7466","info":"#6BA8F5","info.background":"#6BA8F51F","info.border":"#6BA8F566","modified":"#E6BA45","modified.background":"#E6BA451F","modified.border":"#E6BA4566","predictive":"#868F97","predictive.background":"#868F971F","predictive.border":"#868F9766","renamed":"#6BA8F5","renamed.background":"#6BA8F51F","renamed.border":"#6BA8F566","success":"#6FD47F","success.background":"#6FD47F1F","success.border":"#6FD47F66","unreachable":"#646C74","unreachable.background":"#646C741F","unreachable.border":"#646C7466","warning":"#F0A05E","warning.background":"#F0A05E1F","warning.border":"#F0A05E66","terminal.background":"#14171A","terminal.foreground":"#E6E4E0","terminal.bright_foreground":"#E6E4E0","terminal.dim_foreground":"#9BA4AC","terminal.ansi.background":"#14171A","terminal.ansi.black":"#1B1F23","terminal.ansi.red":"#F2736B","terminal.ansi.green":"#6FD47F","terminal.ansi.yellow":"#E6BA45","terminal.ansi.blue":"#6BA8F5","terminal.ansi.magenta":"#C79BF0","terminal.ansi.cyan":"#3FD3B4","terminal.ansi.white":"#9BA4AC","terminal.ansi.bright_black":"#868F97","terminal.ansi.bright_red":"#F2736B","terminal.ansi.bright_green":"#6FD47F","terminal.ansi.bright_yellow":"#E6BA45","terminal.ansi.bright_blue":"#6BA8F5","terminal.ansi.bright_magenta":"#C79BF0","terminal.ansi.bright_cyan":"#3FD3B4","terminal.ansi.bright_white":"#E6E4E0","terminal.ansi.dim_black":"#646C74","terminal.ansi.dim_red":"#F2736B","terminal.ansi.dim_green":"#6FD47F","terminal.ansi.dim_yellow":"#E6BA45","terminal.ansi.dim_blue":"#6BA8F5","terminal.ansi.dim_magenta":"#C79BF0","terminal.ansi.dim_cyan":"#3FD3B4","terminal.ansi.dim_white":"#868F97","players":[{"cursor":"#3FD3B4","background":"#3FD3B4","selection":"#1D3B39"},{"cursor":"#6BA8F5","background":"#6BA8F5","selection":"#6BA8F540"},{"cursor":"#6FD47F","background":"#6FD47F","selection":"#6FD47F40"},{"cursor":"#E6BA45","background":"#E6BA45","selection":"#E6BA4540"},{"cursor":"#F0A05E","background":"#F0A05E","selection":"#F0A05E40"},{"cursor":"#F2736B","background":"#F2736B","selection":"#F2736B40"},{"cursor":"#C79BF0","background":"#C79BF0","selection":"#C79BF040"},{"cursor":"#9BA4AC","background":"#9BA4AC","selection":"#9BA4AC40"}],"accents":["#3FD3B4","#6BA8F5","#6FD47F","#E6BA45","#F0A05E","#F2736B","#C79BF0"],"syntax":{"keyword":{"color":"#C79BF0"},"keyword.import":{"color":"#C79BF0"},"function":{"color":"#6BA8F5"},"function.method":{"color":"#6BA8F5"},"function.definition":{"color":"#6BA8F5"},"type":{"color":"#3FD3B4"},"constructor":{"color":"#3FD3B4"},"enum":{"color":"#3FD3B4"},"variant":{"color":"#F0A05E"},"variable":{"color":"#E6E4E0"},"variable.special":{"color":"#F0A05E","font_style":"italic"},"property":{"color":"#E6E4E0"},"constant":{"color":"#E6BA45"},"string":{"color":"#6FD47F"},"string.escape":{"color":"#F0A05E"},"string.regex":{"color":"#F0A05E"},"string.special":{"color":"#F0A05E"},"string.special.symbol":{"color":"#F0A05E"},"number":{"color":"#E6BA45"},"boolean":{"color":"#E6BA45"},"comment":{"color":"#9BA4AC","font_style":"italic"},"comment.doc":{"color":"#9BA4AC","font_style":"italic"},"operator":{"color":"#9BA4AC"},"punctuation":{"color":"#9BA4AC"},"punctuation.bracket":{"color":"#9BA4AC"},"punctuation.delimiter":{"color":"#9BA4AC"},"punctuation.list_marker":{"color":"#3FD3B4"},"punctuation.special":{"color":"#F0A05E"},"attribute":{"color":"#F0A05E"},"label":{"color":"#F0A05E"},"tag":{"color":"#C79BF0"},"preproc":{"color":"#C79BF0"},"embedded":{"color":"#E6E4E0"},"emphasis":{"color":"#3FD3B4","font_style":"italic"},"emphasis.strong":{"color":"#3FD3B4","font_weight":700},"title":{"color":"#6BA8F5","font_weight":700},"link_text":{"color":"#6BA8F5","font_style":"italic"},"link_uri":{"color":"#6FD47F"},"text.literal":{"color":"#6FD47F"},"hint":{"color":"#3FD3B4","font_style":"italic"},"predictive":{"color":"#868F97","font_style":"italic"},"primary":{"color":"#E6E4E0"},"variable.parameter":{"color":"#E6E4E0"},"namespace":{"color":"#E6E4E0"},"selector":{"color":"#C79BF0"},"selector.pseudo":{"color":"#F0A05E"},"punctuation.markup":{"color":"#9BA4AC"},"diff.plus":{"color":"#6FD47F"},"diff.minus":{"color":"#F2736B"}}}},{"name":"Turbine Subsonic","appearance":"light","style":{"background":"#F7F4EF","background.appearance":"opaque","surface.background":"#EFEBE4","elevated_surface.background":"#FFFFFF","border":"#D9D3CA","border.variant":"#D9D3CA","border.focused":"#0C7763","border.selected":"#0C7763","border.transparent":"#00000000","border.disabled":"#D9D3CA","text":"#22262B","text.muted":"#5A6169","text.placeholder":"#636A72","text.disabled":"#8B939B","text.accent":"#0C7763","icon":"#22262B","icon.muted":"#5A6169","icon.placeholder":"#636A72","icon.disabled":"#8B939B","icon.accent":"#0C7763","link_text.hover":"#0C7763","element.background":"#EFEBE4","element.hover":"#D9D3CA","element.active":"#B9B1A6","element.selected":"#CFE8E1","element.disabled":"#EFEBE4","element.selection_background":"#0C776340","ghost_element.background":"#00000000","ghost_element.hover":"#D9D3CA","ghost_element.active":"#B9B1A6","ghost_element.selected":"#CFE8E1","ghost_element.disabled":"#00000000","drop_target.background":"#0C776333","drop_target.border":"#0C7763","title_bar.background":"#EFEBE4","title_bar.inactive_background":"#F7F4EF","status_bar.background":"#EFEBE4","toolbar.background":"#F7F4EF","tab_bar.background":"#EFEBE4","tab.active_background":"#F7F4EF","tab.inactive_background":"#EFEBE4","panel.background":"#EFEBE4","panel.overlay_background":"#EFEBE4","panel.overlay_hover":"#D9D3CA","panel.focused_border":"#0C7763","panel.indent_guide":"#D9D3CA","panel.indent_guide_active":"#B9B1A6","panel.indent_guide_hover":"#B9B1A6","pane.focused_border":"#0C7763","pane_group.border":"#D9D3CA","scrollbar.thumb.background":"#D9D3CA","scrollbar.thumb.hover_background":"#B9B1A6","scrollbar.thumb.active_background":"#8B939B","scrollbar.thumb.border":"#00000000","scrollbar.track.background":"#00000000","scrollbar.track.border":"#00000000","minimap.thumb.background":"#B9B1A666","minimap.thumb.hover_background":"#B9B1A699","minimap.thumb.active_background":"#B9B1A6B3","minimap.thumb.border":"#B9B1A6","search.match_background":"#CFE8E1","search.active_match_background":"#0C776366","debugger.accent":"#C0342B","editor.foreground":"#22262B","editor.background":"#F7F4EF","editor.gutter.background":"#F7F4EF","editor.subheader.background":"#EFEBE4","editor.active_line.background":"#EFECE6","editor.highlighted_line.background":"#0C776326","editor.debugger_active_line.background":"#8A5A0033","editor.line_number":"#5A6169","editor.active_line_number":"#22262B","editor.hover_line_number":"#22262B","editor.invisible":"#8B939B","editor.wrap_guide":"#D9D3CA","editor.active_wrap_guide":"#B9B1A6","editor.indent_guide":"#D9D3CA","editor.indent_guide_active":"#B9B1A6","editor.document_highlight.read_background":"#0C776333","editor.document_highlight.write_background":"#8A5A0033","editor.document_highlight.bracket_background":"#CFE8E1","editor.diff_hunk.added.background":"#17714A1F","editor.diff_hunk.added.hollow_background":"#17714A0F","editor.diff_hunk.added.hollow_border":"#17714A5C","editor.diff_hunk.deleted.background":"#C0342B1F","editor.diff_hunk.deleted.hollow_background":"#C0342B0F","editor.diff_hunk.deleted.hollow_border":"#C0342B5C","version_control.added":"#17714A","version_control.deleted":"#C0342B","version_control.modified":"#8A5A00","version_control.renamed":"#1D5FCC","version_control.conflict":"#B4470F","version_control.ignored":"#8B939B","version_control.word_added":"#17714A59","version_control.word_deleted":"#C0342B59","version_control.conflict_marker.ours":"#17714A26","version_control.conflict_marker.theirs":"#1D5FCC26","vim.normal.background":"#0C776333","vim.normal.foreground":"#22262B","vim.insert.background":"#17714A33","vim.insert.foreground":"#22262B","vim.replace.background":"#C0342B33","vim.replace.foreground":"#22262B","vim.visual.background":"#7A3BB533","vim.visual.foreground":"#22262B","vim.visual_line.background":"#7A3BB533","vim.visual_line.foreground":"#22262B","vim.visual_block.background":"#7A3BB533","vim.visual_block.foreground":"#22262B","vim.helix_normal.background":"#0C776333","vim.helix_normal.foreground":"#22262B","vim.helix_select.background":"#7A3BB533","vim.helix_select.foreground":"#22262B","vim.yank.background":"#8A5A0040","vim.helix_jump_label.foreground":"#C0342B","conflict":"#B4470F","conflict.background":"#B4470F1F","conflict.border":"#B4470F66","created":"#17714A","created.background":"#17714A1F","created.border":"#17714A66","deleted":"#C0342B","deleted.background":"#C0342B1F","deleted.border":"#C0342B66","error":"#C0342B","error.background":"#C0342B1F","error.border":"#C0342B66","hidden":"#8B939B","hidden.background":"#8B939B1F","hidden.border":"#8B939B66","hint":"#0C7763","hint.background":"#0C77631F","hint.border":"#0C776366","ignored":"#8B939B","ignored.background":"#8B939B1F","ignored.border":"#8B939B66","info":"#1D5FCC","info.background":"#1D5FCC1F","info.border":"#1D5FCC66","modified":"#8A5A00","modified.background":"#8A5A001F","modified.border":"#8A5A0066","predictive":"#636A72","predictive.background":"#636A721F","predictive.border":"#636A7266","renamed":"#1D5FCC","renamed.background":"#1D5FCC1F","renamed.border":"#1D5FCC66","success":"#17714A","success.background":"#17714A1F","success.border":"#17714A66","unreachable":"#8B939B","unreachable.background":"#8B939B1F","unreachable.border":"#8B939B66","warning":"#B4470F","warning.background":"#B4470F1F","warning.border":"#B4470F66","terminal.background":"#F7F4EF","terminal.foreground":"#22262B","terminal.bright_foreground":"#22262B","terminal.dim_foreground":"#5A6169","terminal.ansi.background":"#F7F4EF","terminal.ansi.black":"#EFEBE4","terminal.ansi.red":"#C0342B","terminal.ansi.green":"#17714A","terminal.ansi.yellow":"#8A5A00","terminal.ansi.blue":"#1D5FCC","terminal.ansi.magenta":"#7A3BB5","terminal.ansi.cyan":"#0C7763","terminal.ansi.white":"#5A6169","terminal.ansi.bright_black":"#636A72","terminal.ansi.bright_red":"#C0342B","terminal.ansi.bright_green":"#17714A","terminal.ansi.bright_yellow":"#8A5A00","terminal.ansi.bright_blue":"#1D5FCC","terminal.ansi.bright_magenta":"#7A3BB5","terminal.ansi.bright_cyan":"#0C7763","terminal.ansi.bright_white":"#22262B","terminal.ansi.dim_black":"#8B939B","terminal.ansi.dim_red":"#C0342B","terminal.ansi.dim_green":"#17714A","terminal.ansi.dim_yellow":"#8A5A00","terminal.ansi.dim_blue":"#1D5FCC","terminal.ansi.dim_magenta":"#7A3BB5","terminal.ansi.dim_cyan":"#0C7763","terminal.ansi.dim_white":"#636A72","players":[{"cursor":"#0C7763","background":"#0C7763","selection":"#CFE8E1"},{"cursor":"#1D5FCC","background":"#1D5FCC","selection":"#1D5FCC40"},{"cursor":"#17714A","background":"#17714A","selection":"#17714A40"},{"cursor":"#8A5A00","background":"#8A5A00","selection":"#8A5A0040"},{"cursor":"#B4470F","background":"#B4470F","selection":"#B4470F40"},{"cursor":"#C0342B","background":"#C0342B","selection":"#C0342B40"},{"cursor":"#7A3BB5","background":"#7A3BB5","selection":"#7A3BB540"},{"cursor":"#5A6169","background":"#5A6169","selection":"#5A616940"}],"accents":["#0C7763","#1D5FCC","#17714A","#8A5A00","#B4470F","#C0342B","#7A3BB5"],"syntax":{"keyword":{"color":"#7A3BB5"},"keyword.import":{"color":"#7A3BB5"},"function":{"color":"#1D5FCC"},"function.method":{"color":"#1D5FCC"},"function.definition":{"color":"#1D5FCC"},"type":{"color":"#0C7763"},"constructor":{"color":"#0C7763"},"enum":{"color":"#0C7763"},"variant":{"color":"#B4470F"},"variable":{"color":"#22262B"},"variable.special":{"color":"#B4470F","font_style":"italic"},"property":{"color":"#22262B"},"constant":{"color":"#8A5A00"},"string":{"color":"#17714A"},"string.escape":{"color":"#B4470F"},"string.regex":{"color":"#B4470F"},"string.special":{"color":"#B4470F"},"string.special.symbol":{"color":"#B4470F"},"number":{"color":"#8A5A00"},"boolean":{"color":"#8A5A00"},"comment":{"color":"#5A6169","font_style":"italic"},"comment.doc":{"color":"#5A6169","font_style":"italic"},"operator":{"color":"#5A6169"},"punctuation":{"color":"#5A6169"},"punctuation.bracket":{"color":"#5A6169"},"punctuation.delimiter":{"color":"#5A6169"},"punctuation.list_marker":{"color":"#0C7763"},"punctuation.special":{"color":"#B4470F"},"attribute":{"color":"#B4470F"},"label":{"color":"#B4470F"},"tag":{"color":"#7A3BB5"},"preproc":{"color":"#7A3BB5"},"embedded":{"color":"#22262B"},"emphasis":{"color":"#0C7763","font_style":"italic"},"emphasis.strong":{"color":"#0C7763","font_weight":700},"title":{"color":"#1D5FCC","font_weight":700},"link_text":{"color":"#1D5FCC","font_style":"italic"},"link_uri":{"color":"#17714A"},"text.literal":{"color":"#17714A"},"hint":{"color":"#0C7763","font_style":"italic"},"predictive":{"color":"#636A72","font_style":"italic"},"primary":{"color":"#22262B"},"variable.parameter":{"color":"#22262B"},"namespace":{"color":"#22262B"},"selector":{"color":"#7A3BB5"},"selector.pseudo":{"color":"#B4470F"},"punctuation.markup":{"color":"#5A6169"},"diff.plus":{"color":"#17714A"},"diff.minus":{"color":"#C0342B"}}}}]}</script>
+<script>
+(function () {
+  "use strict";
+  var THEME = JSON.parse(document.getElementById("turbine-theme").textContent);
+  var root = document.documentElement;
+  var VARIANTS = { hypersonic: "Turbine Hypersonic", supersonic: "Turbine Supersonic", subsonic: "Turbine Subsonic" };
+  var TOKENS = {
+    hypersonic: { bg:"#000000", surface:"#0E1113", elevated:"#16191C", text:"#EDEBE6", muted:"#99A1A8", ghost:"#7B838A", disabled:"#5C646B", border:"#23282D", border_hi:"#39424A", accent:"#4FE3C1", blue:"#7FB4FF", green:"#7BE38B", yellow:"#F2C94C", orange:"#FFB067", red:"#FF7B72", purple:"#D9A6FF", sel:"#123A38", active_ln:"#0B0E10" },
+    supersonic: { bg:"#14171A", surface:"#1B1F23", elevated:"#22272C", text:"#E6E4E0", muted:"#9BA4AC", ghost:"#868F97", disabled:"#646C74", border:"#2C3238", border_hi:"#414A52", accent:"#3FD3B4", blue:"#6BA8F5", green:"#6FD47F", yellow:"#E6BA45", orange:"#F0A05E", red:"#F2736B", purple:"#C79BF0", sel:"#1D3B39", active_ln:"#1A1E22" },
+    subsonic:   { bg:"#F7F4EF", surface:"#EFEBE4", elevated:"#FFFFFF", text:"#22262B", muted:"#5A6169", ghost:"#636A72", disabled:"#8B939B", border:"#D9D3CA", border_hi:"#B9B1A6", accent:"#0C7763", blue:"#1D5FCC", green:"#17714A", yellow:"#8A5A00", orange:"#B4470F", red:"#C0342B", purple:"#7A3BB5", sel:"#CFE8E1", active_ln:"#EFECE6" }
+  };
+  var TOKEN_JOBS = [
+    ["bg","Canvas, gutter, terminal"],["surface","Panels, tab bar, status bar"],["elevated","Menus, popovers"],
+    ["text","Primary content"],["muted","Comments, line numbers"],["ghost","Predictive text, placeholders"],["disabled","Inert controls"],
+    ["border","Dividers, hover"],["border_hi","Active rails, pressed"],["accent","Focus, types, hints"],["blue","Functions, info, links"],
+    ["green","Strings, created, success"],["yellow","Numbers, constants, modified"],["orange","Attributes, warning"],["red","Errors, deleted"],
+    ["purple","Keywords, tags, macros"],["sel","Selection, search hit"],["active_ln","Cursor line"]
+  ];
+  var EXEMPT = { disabled: 1, border: 1, border_hi: 1, sel: 0, active_ln: 1, bg: 1, surface: 1, elevated: 1 };
+
+  /* ---------- colour maths (WCAG 2.1) */
+  function lin(c) { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }
+  function rgb(h) { h = h.replace("#", ""); return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16), h.length === 8 ? parseInt(h.slice(6,8),16) / 255 : 1]; }
+  function lum(h) { var c = rgb(h); return 0.2126*lin(c[0]) + 0.7152*lin(c[1]) + 0.0722*lin(c[2]); }
+  function ratio(a, b) { var la = lum(a), lb = lum(b); var hi = Math.max(la, lb), lo = Math.min(la, lb); return (hi + 0.05) / (lo + 0.05); }
+  function flatten(fg, bg) { var f = rgb(fg), b = rgb(bg), t = f[3]; function ch(i){ return Math.round(f[i]*t + b[i]*(1-t)); } return "#" + [ch(0),ch(1),ch(2)].map(function(x){ return ("0"+x.toString(16)).slice(-2); }).join("").toUpperCase(); }
+  function grade(r) { return r >= 7 ? "AAA" : r >= 4.5 ? "AA" : "below"; }
+
+  /* ---------- variant state */
+  var current = root.getAttribute("data-variant") || "supersonic";
+  function styleOf(v) { for (var i = 0; i < THEME.themes.length; i++) if (THEME.themes[i].name === VARIANTS[v]) return THEME.themes[i].style; return THEME.themes[1].style; }
+  function paint(v) {
+    current = v; root.setAttribute("data-variant", v);
+    var t = TOKENS[v], s = styleOf(v);
+    Object.keys(t).forEach(function (k) { root.style.setProperty("--" + k.replace("_", "-"), t[k]); });
+    root.style.setProperty("--glow", hexA(t.accent, v === "subsonic" ? 0.14 : 0.2));
+    Object.keys(s).forEach(function (k) {
+      if (k === "syntax" || k === "players" || k === "accents" || k === "background.appearance") return;
+      root.style.setProperty("--c-" + k.replace(/\./g, "-"), s[k]);
+    });
+    s.players.forEach(function (p, i) { root.style.setProperty("--c-players-" + i + "-cursor", p.cursor); root.style.setProperty("--c-players-" + i + "-background", p.background); root.style.setProperty("--c-players-" + i + "-selection", p.selection); });
+    var meta = document.querySelector('meta[name="theme-color"]'); if (meta) meta.setAttribute("content", t.surface);
+    document.querySelectorAll(".mode").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-variant") === v)); });
+    document.getElementById("variant-name").textContent = VARIANTS[v];
+    document.getElementById("status-theme").textContent = VARIANTS[v];
+    document.getElementById("stat-text").textContent = ratio(t.text, t.bg).toFixed(1) + ":1";
+    var sd = document.getElementById("settings-dark"); if (sd && v !== "subsonic") sd.textContent = '"' + VARIANTS[v] + '"';
+    document.querySelectorAll(".duty .bar").forEach(function (b) { b.classList.toggle("current", b.getAttribute("data-v") === v); });
+    renderCode(); renderGauges(); renderContrast();
+    try { localStorage.setItem("turbine.variant", v); } catch (e) {}
+  }
+  function hexA(h, a) { var c = rgb(h); return "rgba(" + c[0] + "," + c[1] + "," + c[2] + "," + a + ")"; }
+  document.querySelectorAll(".mode").forEach(function (b) { b.addEventListener("click", function () { paint(b.getAttribute("data-variant")); toast(VARIANTS[b.getAttribute("data-variant")]); }); });
+  document.addEventListener("keydown", function (e) {
+    if (e.target && /input|textarea/i.test(e.target.tagName)) return;
+    var map = { "1": "hypersonic", "2": "supersonic", "3": "subsonic" };
+    if (map[e.key] && !e.metaKey && !e.ctrlKey && !e.altKey) { paint(map[e.key]); toast(VARIANTS[map[e.key]]); }
+  });
+  if (window.matchMedia) {
+    var mq = window.matchMedia("(prefers-color-scheme: light)");
+    var onScheme = function (ev) { var saved = null; try { saved = localStorage.getItem("turbine.variant"); } catch (e) {} if (!saved) paint(ev.matches ? "subsonic" : "supersonic"); };
+    if (mq.addEventListener) mq.addEventListener("change", onScheme); else if (mq.addListener) mq.addListener(onScheme);
+  }
+
+  /* ---------- toast */
+  var toastEl = document.getElementById("toast"), toastTimer;
+  function toast(msg) { toastEl.textContent = msg; toastEl.setAttribute("data-on", "1"); clearTimeout(toastTimer); toastTimer = setTimeout(function () { toastEl.setAttribute("data-on", "0"); }, 1400); }
+
+  /* ---------- battery advice */
+  var advice = document.getElementById("advice");
+  function showAdvice(text, target) {
+    var dismissed = false; try { dismissed = sessionStorage.getItem("turbine.advice") === "1"; } catch (e) {}
+    if (dismissed || current === target) return;
+    document.getElementById("advice-text").textContent = text;
+    advice.setAttribute("data-show", "1");
+    document.getElementById("advice-go").onclick = function () { paint(target); advice.setAttribute("data-show", "0"); toast(VARIANTS[target]); };
+  }
+  document.getElementById("advice-x").addEventListener("click", function () { advice.setAttribute("data-show", "0"); try { sessionStorage.setItem("turbine.advice", "1"); } catch (e) {} });
+  if (navigator.getBattery) {
+    navigator.getBattery().then(function (b) {
+      var check = function () {
+        if (!b.charging) showAdvice("You're on battery (" + Math.round(b.level * 100) + "%). Hypersonic lights the fewest pixels.", "hypersonic");
+        else advice.setAttribute("data-show", "0");
+      };
+      check(); b.addEventListener("chargingchange", check);
+    }).catch(function () {});
+  } else if (/Android|iPhone|iPad/i.test(navigator.userAgent)) {
+    showAdvice("On a phone or tablet, Hypersonic lights the fewest pixels.", "hypersonic");
+  }
+
+  /* ---------- emission gauge: luminance weighted by rough screen share */
+  (function () {
+    var vals = {};
+    Object.keys(TOKENS).forEach(function (v) { var t = TOKENS[v]; vals[v] = 0.72 * lum(t.bg) + 0.22 * lum(t.surface) + 0.06 * lum(t.text); });
+    var max = Math.max.apply(null, Object.keys(vals).map(function (k) { return vals[k]; }));
+    document.querySelectorAll(".duty .bar").forEach(function (b) {
+      var v = b.getAttribute("data-v"), pct = vals[v] / max * 100;
+      requestAnimationFrame(function () { b.querySelector(".fill").style.width = Math.max(pct, 1.5) + "%"; });
+      b.querySelector(".num").textContent = (pct < 1 ? pct.toFixed(1) : Math.round(pct)) + "%";
+    });
+  })();
+
+  /* ---------- hero: pointer tilt + scroll spool */
+  var emblem = document.getElementById("emblem"), reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!reduce) {
+    emblem.addEventListener("pointermove", function (e) {
+      var r = emblem.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+      emblem.style.setProperty("--px", (x * 100) + "%"); emblem.style.setProperty("--py", (y * 100) + "%");
+      emblem.style.setProperty("--ty", ((x - 0.5) * 16) + "deg"); emblem.style.setProperty("--tx", ((0.5 - y) * 16) + "deg");
+    });
+    emblem.addEventListener("pointerleave", function () { emblem.style.setProperty("--tx", "0deg"); emblem.style.setProperty("--ty", "0deg"); emblem.style.setProperty("--px", "50%"); emblem.style.setProperty("--py", "50%"); });
+    var spool = 0, vel = 0, lastY = window.scrollY, lastT = performance.now();
+    window.addEventListener("scroll", function () { var now = performance.now(); var dy = window.scrollY - lastY; vel += dy * 0.35; lastY = window.scrollY; lastT = now; }, { passive: true });
+    (function tick() { vel *= 0.92; spool += 0.25 + vel * 0.02; root.style.setProperty("--spool", (spool % 360) + "deg"); requestAnimationFrame(tick); })();
+  }
+
+  /* ---------- code samples. «capture|text» segments; plain text is editor.foreground */
+  var SAMPLES = {
+    "turbine.rs": { lang: "Rust", crumbs: ["src", "turbine.rs", "impl Turbine", "spool"], vc: { 1: "add", 2: "add", 9: "mod", 10: "mod", 11: "mod", 18: "del" }, active: 11, lines: [
+      "«keyword.import|use» «namespace|std»«punctuation.delimiter|::»«namespace|time»«punctuation.delimiter|::»«type|Duration»«punctuation.delimiter|;»",
+      "",
+      "«comment.doc|/// Spool the fan to a target regime.»",
+      "«punctuation.special|#[»«attribute|derive»«punctuation.bracket|(»«type|Debug»«punctuation.delimiter|,» «type|Clone»«punctuation.delimiter|,» «type|Copy»«punctuation.bracket|)»«punctuation.special|]»",
+      "«keyword|pub» «keyword|enum» «enum|Regime» «punctuation.bracket|{» «variant|Subsonic»«punctuation.delimiter|,» «variant|Supersonic»«punctuation.delimiter|,» «variant|Hypersonic» «punctuation.bracket|}»",
+      "",
+      "«keyword|impl» «type|Turbine» «punctuation.bracket|{»",
+      "  «keyword|pub» «keyword|fn» «function.definition|spool»«punctuation.bracket|(»«operator|&»«keyword|mut» «variable.special|self»«punctuation.delimiter|,» «variable.parameter|target»«punctuation.delimiter|:» «type|Regime»«punctuation.bracket|)» «operator|->» «type|Result»«punctuation.bracket|<»«type|u32»«punctuation.delimiter|,» «type|SpoolError»«punctuation.bracket|>» «punctuation.bracket|{»",
+      "    «keyword|let» «variable|ceiling»«hint|: u32» «operator|=» «keyword|match» «variable.parameter|target» «punctuation.bracket|{»",
+      "      «enum|Regime»«punctuation.delimiter|::»«variant|Subsonic» «operator|=>» «number|3_400»«punctuation.delimiter|,»",
+      "      «enum|Regime»«punctuation.delimiter|::»«variant|Supersonic» «operator|=>» «number|9_200»«punctuation.delimiter|,»▌",
+      "      «enum|Regime»«punctuation.delimiter|::»«variant|Hypersonic» «operator|=>» «number|14_800»«punctuation.delimiter|,»",
+      "    «punctuation.bracket|}»«punctuation.delimiter|;»",
+      "    «keyword|while» «variable.special|self»«punctuation.delimiter|.»«property|rpm» «operator|<» «variable|ceiling|rd» «punctuation.bracket|{»",
+      "      «variable.special|self»«punctuation.delimiter|.»«property|rpm» «operator|+=» «number|250»«punctuation.delimiter|;» «comment|// ramp gently»",
+      "      «namespace|std»«punctuation.delimiter|::»«namespace|thread»«punctuation.delimiter|::»«function|sleep»«punctuation.bracket|(»«type|Duration»«punctuation.delimiter|::»«function|from_millis»«punctuation.bracket|(»«number|16»«punctuation.bracket|))»«punctuation.delimiter|;»",
+      "    «punctuation.bracket|}»",
+      "    «variable.special|self»«punctuation.delimiter|.»«property|regime» «operator|=» «variable.parameter|target»«punctuation.delimiter|;»",
+      "    «keyword|if» «variable|ceilng|err» «operator|>» «constant|MAX_RPM» «punctuation.bracket|{» «keyword|return» «type|Err»«punctuation.bracket|(»«type|SpoolError»«punctuation.delimiter|::»«variant|Overspeed»«punctuation.bracket|)»«punctuation.delimiter|;» «punctuation.bracket|}»",
+      "    «type|Ok»«punctuation.bracket|(»«variable.special|self»«punctuation.delimiter|.»«property|rpm»«punctuation.bracket|)»",
+      "    «predictive|// predictive: log::info!(\"spooled to {}\", self.rpm);»",
+      "  «punctuation.bracket|}»",
+      "«punctuation.bracket|}»"
+    ]},
+    "gauge.ts": { lang: "TypeScript", crumbs: ["site", "gauge.ts", "createGauge"], vc: { 4: "add", 5: "add", 6: "add" }, active: 9, lines: [
+      "«keyword.import|import» «punctuation.bracket|{» «variable|signal»«punctuation.delimiter|,» «variable|effect» «punctuation.bracket|}» «keyword.import|from» «string|\"./reactive\"»«punctuation.delimiter|;»",
+      "",
+      "«keyword|export» «keyword|interface» «type|Gauge» «punctuation.bracket|{» «property|label»«punctuation.delimiter|:» «type|string»«punctuation.delimiter|;» «property|value»«punctuation.delimiter|:» «type|number»«punctuation.delimiter|;» «property|max»«punctuation.delimiter|:» «type|number» «punctuation.bracket|}»",
+      "",
+      "«keyword|const» «constant|REGIMES» «operator|=» «punctuation.bracket|[»«string|\"subsonic\"»«punctuation.delimiter|,» «string|\"supersonic\"»«punctuation.delimiter|,» «string|\"hypersonic\"»«punctuation.bracket|]» «keyword|as» «keyword|const»«punctuation.delimiter|;»",
+      "«keyword|type» «type|Regime» «operator|=» «punctuation.bracket|(»«keyword|typeof» «constant|REGIMES»«punctuation.bracket|)[»«type|number»«punctuation.bracket|]»«punctuation.delimiter|;»",
+      "",
+      "«keyword|export» «keyword|function» «function.definition|createGauge»«punctuation.bracket|(»«variable.parameter|label»«punctuation.delimiter|:» «type|string»«punctuation.delimiter|,» «variable.parameter|max» «operator|=» «number|100»«punctuation.bracket|)»«punctuation.delimiter|:» «type|Gauge» «punctuation.bracket|{»",
+      "  «keyword|const» «variable|value|wr» «operator|=» «function|signal»«punctuation.bracket|(»«number|0»«punctuation.bracket|)»«punctuation.delimiter|;»▌",
+      "  «function|effect»«punctuation.bracket|((»«punctuation.bracket|)» «operator|=>» «punctuation.bracket|{»",
+      "    «keyword|const» «variable|pct» «operator|=» «type|Math»«punctuation.delimiter|.»«function.method|min»«punctuation.bracket|(»«variable|value|rd»«punctuation.bracket|()» «operator|/» «variable.parameter|max»«punctuation.delimiter|,» «number|1»«punctuation.bracket|)»«punctuation.delimiter|;»",
+      "    «variable|document»«punctuation.delimiter|.»«property|title» «operator|=» «string|`»«punctuation.special|${»«variable.parameter|label»«punctuation.special|}»«string| · »«punctuation.special|${»«punctuation.bracket|(»«variable|pct» «operator|*» «number|100»«punctuation.bracket|)»«punctuation.delimiter|.»«function.method|toFixed»«punctuation.bracket|(»«number|1»«punctuation.bracket|)»«punctuation.special|}»«string|%`»«punctuation.delimiter|;»",
+      "  «punctuation.bracket|})»«punctuation.delimiter|;»",
+      "  «keyword|return» «punctuation.bracket|{» «property|label»«punctuation.delimiter|,» «property|value»«punctuation.delimiter|:» «variable|value|rd»«punctuation.bracket|()»«punctuation.delimiter|,» «property|max» «punctuation.bracket|}»«punctuation.delimiter|;»",
+      "  «predictive|// predictive: return Object.freeze(gauge);»",
+      "«punctuation.bracket|}»",
+      "",
+      "«keyword|export» «keyword|const» «variable|isRegime» «operator|=» «punctuation.bracket|(»«variable.parameter|s»«punctuation.delimiter|:» «type|string»«punctuation.bracket|)»«punctuation.delimiter|:» «variable.parameter|s» «keyword|is» «type|Regime» «operator|=>» «constant|REGIMES»«punctuation.delimiter|.»«function.method|includes»«punctuation.bracket|(»«variable.parameter|s» «keyword|as» «type|Regime»«punctuation.bracket|)»«punctuation.delimiter|;»"
+    ]},
+    "README.md": { lang: "Markdown", crumbs: ["README.md", "Install"], vc: { 3: "mod" }, active: 7, lines: [
+      "«title|# Turbine»",
+      "",
+      "«emphasis|*Three regimes*»«punctuation.delimiter|,» «emphasis.strong|**one token model**»«punctuation.delimiter|,» one JSON file«punctuation.delimiter|.»",
+      "",
+      "«title|## Install»",
+      "",
+      "«punctuation.list_marker|1.» Clone the repository▌",
+      "«punctuation.list_marker|2.» Run «text.literal|`zed: install dev extension`» and pick the folder",
+      "«punctuation.list_marker|3.» Open «text.literal|`theme selector`» and choose a regime",
+      "",
+      "«punctuation.list_marker|-» «link_text|[Design decisions]»«punctuation.bracket|(»«link_uri|docs/decisions.md»«punctuation.bracket|)»",
+      "«punctuation.list_marker|-» «link_text|[Contrast report]»«punctuation.bracket|(»«link_uri|docs/contrast.md»«punctuation.bracket|)»",
+      "",
+      "«text.literal|```sh»",
+      "«text.literal|python3 build/build_theme.py --report»",
+      "«text.literal|```»",
+      "",
+      "«predictive|Every text pair clears WCAG AA. Most dark-variant pairs clear AAA.»"
+    ]}
+  };
+  var TREE = [
+    { n: "turbine-theme", d: 0, dir: 1 },
+    { n: "build", d: 1, dir: 1 }, { n: "build_theme.py", d: 2 }, { n: "schema_keys.txt", d: 2 }, { n: "validate_turbine.py", d: 2 },
+    { n: "docs", d: 1, dir: 1 }, { n: "contrast.md", d: 2, cls: "add" }, { n: "decisions.md", d: 2 },
+    { n: "site", d: 1, dir: 1 }, { n: "gauge.ts", d: 2, file: "gauge.ts", cls: "add" }, { n: "index.html", d: 2 },
+    { n: "src", d: 1, dir: 1 }, { n: "turbine.rs", d: 2, file: "turbine.rs", cls: "mod" },
+    { n: "themes", d: 1, dir: 1 }, { n: "turbine.json", d: 2 },
+    { n: "README.md", d: 1, file: "README.md", cls: "mod" }, { n: "extension.toml", d: 1 }, { n: "target", d: 1, dir: 1, cls: "ign" }
+  ];
+  var openFile = "turbine.rs", showDiff = false, showFind = false;
+  var vimModes = [["-- NORMAL --","normal"],["-- INSERT --","insert"],["-- VISUAL --","visual"],["-- REPLACE --","replace"]], vimIx = 0;
+
+  function synStyle(s, cap) {
+    var syn = s.syntax; var c = cap, e = null;
+    while (c && !(e = syn[c])) c = c.indexOf(".") > -1 ? c.slice(0, c.lastIndexOf(".")) : null;
+    return e || null;
+  }
+  function esc(t) { return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  function renderLine(s, line, ix, sample) {
+    var out = "", re = /«([^|»]*)\|([^»]*?)(?:\|([a-z]+))?»|([^«]+)/g, m, hasCursor = line.indexOf("▌") > -1;
+    line = line.replace("▌", "");
+    var depth = (line.match(/^ */) || [""])[0].length / 2;
+    var guides = ""; for (var g = 0; g < Math.floor(depth); g++) guides += '<span class="guide' + (g === Math.floor(depth) - 1 && ix === sample.active ? " on" : "") + '"></span>';
+    line = line.replace(/^ +/, function (sp) { return sp.length % 2 ? " " : ""; });
+    while ((m = re.exec(line))) {
+      if (m[4] !== undefined) { out += esc(m[4]); continue; }
+      var cap = m[1], text = m[2], mark = m[3] || "";
+      var st = cap === "hint" ? null : synStyle(s, cap);
+      if (cap === "hint") { out += '<span class="hint">' + esc(text) + "</span>"; continue; }
+      var style = st ? "--syn:" + st.color + ";--syn-style:" + (st.font_style || "normal") + ";--syn-w:" + (st.font_weight || 400) : "";
+      if (showFind && /regime/i.test(text) && cap !== "comment" && cap !== "predictive") mark += " find" + (ix === sample.active ? " on" : "");
+      out += '<span class="s ' + mark + '" style="' + style + '">' + esc(text) + "</span>";
+    }
+    if (hasCursor) out += '<span class="cursor"></span>';
+    return guides + out;
+  }
+  function renderCode() {
+    var s = styleOf(current), sample = SAMPLES[openFile], html = "";
+    sample.lines.forEach(function (line, i) {
+      var n = i + 1, vc = sample.vc[n] || "", cls = "ln" + (n === sample.active ? " active" : "");
+      if (showDiff && vc === "add") cls += " added"; if (showDiff && vc === "del") cls += " deleted";
+      html += '<div class="' + cls + '"><span class="n">' + n + '</span><span class="vc ' + vc + '"></span><span class="t">' + renderLine(s, line, n, sample) + "</span></div>";
+    });
+    document.getElementById("code").innerHTML = html;
+    document.getElementById("crumbs").innerHTML = sample.crumbs.map(function (c, i) { return i === sample.crumbs.length - 1 ? "<b>" + esc(c) + "</b>" : esc(c) + " ›"; }).join(" ");
+    document.getElementById("pop").style.display = openFile === "turbine.rs" ? "block" : "none";
+    document.getElementById("pos").textContent = "Ln " + sample.active + ", Col 13";
+    document.querySelector(".z-status .right span:nth-child(2)").textContent = sample.lang;
+    var t = TOKENS[current];
+    document.getElementById("term").innerHTML = '<div class="hdr">Terminal</div>' + termLine(t);
+    var vm = vimModes[vimIx][1]; var pill = document.getElementById("vim"); pill.textContent = vimModes[vimIx][0]; pill.style.background = "var(--c-vim-" + vm + "-background)";
+  }
+  function termLine(t) {
+    var s = styleOf(current);
+    function c(k, txt) { return '<span style="color:' + s["terminal.ansi." + k] + '">' + esc(txt) + "</span>"; }
+    return c("green", "➜ ") + c("cyan", "turbine-theme ") + c("blue", "git:(") + c("red", "main") + c("blue", ") ") + "python3 build/build_theme.py --report\n" +
+      "wrote docs/contrast.md — " + c("green", "0 failure(s)") + "\n" +
+      c("green", "➜ ") + c("cyan", "turbine-theme ") + c("blue", "git:(") + c("red", "main") + c("blue", ") ") + "ls themes\n" +
+      c("bright_blue", "turbine.json") + "  " + c("bright_black", "# bright_black stays legible") + "\n" +
+      c("green", "➜ ") + c("cyan", "turbine-theme ") + c("blue", "git:(") + c("red", "main") + c("blue", ") ") + '<span style="color:' + s["terminal.ansi.bright_black"] + '">git push -u origin main</span>';
+  }
+  function renderTabs() {
+    var st = { "turbine.rs": ["●", "mod"], "gauge.ts": ["+", "add"], "README.md": ["●", "mod"] };
+    document.getElementById("tabs").innerHTML = Object.keys(SAMPLES).map(function (f) {
+      return '<button class="z-tab" role="tab" aria-selected="' + (f === openFile) + '" data-file="' + f + '">' + esc(f) + '<span class="st" style="color:var(--c-' + (st[f][1] === "add" ? "created" : "modified") + ')">' + st[f][0] + "</span></button>";
+    }).join("");
+    document.querySelectorAll(".z-tab").forEach(function (b) { b.addEventListener("click", function () { openFile = b.getAttribute("data-file"); renderTabs(); renderTree(); renderCode(); }); });
+  }
+  function renderTree() {
+    document.getElementById("tree").innerHTML = '<div class="hd">Project</div>' + TREE.map(function (r) {
+      var sel = r.file === openFile;
+      return '<div class="z-row' + (r.cls ? " " + r.cls : "") + '" style="--d:' + r.d + '" aria-selected="' + sel + '"' + (r.file ? ' data-file="' + r.file + '"' : "") + '>' +
+        (r.d > 0 ? '<span class="g' + (sel ? " a" : "") + '"></span>' : "") + '<span class="ic">' + (r.dir ? "▾" : "·") + "</span>" + esc(r.n) + "</div>";
+    }).join("");
+    document.querySelectorAll(".z-row[data-file]").forEach(function (r) { r.addEventListener("click", function () { openFile = r.getAttribute("data-file"); renderTabs(); renderTree(); renderCode(); }); });
+  }
+  document.getElementById("toggle-diff").addEventListener("click", function () { showDiff = !showDiff; this.setAttribute("aria-pressed", String(showDiff)); renderCode(); });
+  document.getElementById("toggle-find").addEventListener("click", function () { showFind = !showFind; this.setAttribute("aria-pressed", String(showFind)); renderCode(); });
+  document.getElementById("vim").addEventListener("click", function () { vimIx = (vimIx + 1) % vimModes.length; renderCode(); });
+
+  /* ---------- gauges */
+  function renderGauges() {
+    var t = TOKENS[current];
+    document.getElementById("gauges").innerHTML = TOKEN_JOBS.map(function (j) {
+      var k = j[0], hex = t[k], r = ratio(hex, t.bg), g = grade(r);
+      var on = lum(hex) > 0.4 ? "#22262B" : "#EDEBE6";
+      var badge = EXEMPT[k] ? '<span class="ex">not a text pair</span>' : (g === "below" ? '<span class="ex">below (exempt)</span>' : '<span class="' + (g === "AAA" ? "ok" : "aa") + '">' + g + "</span>");
+      return '<button class="gauge" data-hex="' + hex + '" style="--sw:' + hex + ';--on:' + on + '" title="Copy ' + hex + '"><span class="sw">' + (k === "text" ? "Aa" : k === "bg" ? "" : "Aa") + '</span><span class="lbl"><b>' + k + '</b><code>' + hex + '</code></span><span class="cr"><span class="num">' + r.toFixed(2) + ':1</span>' + badge + '</span><span class="sr">' + j[1] + '</span></button>';
+    }).join("");
+    document.querySelectorAll(".gauge").forEach(function (b) { b.addEventListener("click", function () { copy(b.getAttribute("data-hex")); }); });
+  }
+
+  /* ---------- contrast table */
+  function renderContrast() {
+    var t = TOKENS[current], s = styleOf(current);
+    var rows = [
+      ["text on canvas", t.text, t.bg, "Code, UI labels"],
+      ["text on panels", t.text, t.surface, "Project panel, tabs, status bar"],
+      ["muted on canvas", t.muted, t.bg, "Comments, line numbers"],
+      ["ghost on popover", t.ghost, t.elevated, "Command palette placeholder"],
+      ["accent on panels", t.accent, t.surface, "Matched characters in pickers"],
+      ["keyword on canvas", t.purple, t.bg, "Keywords, tags"],
+      ["function on canvas", t.blue, t.bg, "Functions, links"],
+      ["string on canvas", t.green, t.bg, "Strings"],
+      ["number on canvas", t.yellow, t.bg, "Numbers, constants"],
+      ["attribute on canvas", t.orange, t.bg, "Attributes, warnings"],
+      ["error on canvas", t.red, t.bg, "Diagnostics"],
+      ["text on selection", t.text, t.sel, "Selected code"],
+      ["text on active search match", t.text, flatten(s["search.active_match_background"], t.bg), "Search in buffer"],
+      ["text on added diff row", t.text, flatten(s["editor.diff_hunk.added.background"], t.bg), "Project diff, expanded hunks"],
+      ["text on error tint", t.text, flatten(s["error.background"], t.surface), "Diagnostic popover, tinted buttons"],
+      ["text on vim insert pill", t.text, flatten(s["vim.insert.background"], t.surface), "Status bar mode indicator"]
+    ];
+    document.querySelector("#ctable tbody").innerHTML = rows.map(function (r) {
+      var x = ratio(r[1], r[2]), g = grade(x);
+      return "<tr><td>" + r[0] + '</td><td class="v">' + x.toFixed(2) + ':1</td><td><span class="b ' + (g === "AAA" ? "aaa" : g === "AA" ? "aa" : "ex") + '">' + g + "</span></td><td>" + r[3] + "</td></tr>";
+    }).join("");
+  }
+
+  /* ---------- copy */
+  function copy(text, btn) {
+    var done = function () { toast("Copied " + (text.length > 28 ? text.slice(0, 26) + "…" : text)); if (btn) { btn.setAttribute("data-done", "1"); btn.textContent = "Copied"; setTimeout(function () { btn.removeAttribute("data-done"); btn.textContent = "Copy"; }, 1400); } };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, function () { fallback(text); done(); }); else { fallback(text); done(); }
+  }
+  function fallback(text) { var ta = document.createElement("textarea"); ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0"; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); } catch (e) {} document.body.removeChild(ta); }
+  document.querySelectorAll(".cmd .copy").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var text = b.getAttribute("data-copy");
+      if (!text) text = '"theme": {\n  "mode": "system",\n  "light": "Turbine Subsonic",\n  "dark": ' + document.getElementById("settings-dark").textContent + "\n}";
+      copy(text, b);
+    });
+  });
+
+  /* ---------- boot */
+  renderTabs(); renderTree(); paint(current);
+})();
+</script>
+</body>
+</html>
